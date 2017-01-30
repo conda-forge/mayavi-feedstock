@@ -25,13 +25,13 @@ requirements:
     - python
     - numpy x.x
     - setuptools
-    - vtk
+    - vtk 7.1.*
     - traitsui
     - apptools
   run:
     - python
     - numpy x.x
-    - vtk  ==7.1.0
+    - vtk 7.1.*
     - traitsui
     - apptools
     - envisage
