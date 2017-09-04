@@ -1,5 +1,7 @@
 #!/bin/bash
 
-CMD="$PYTHON setup.py install --single-version-externally-managed --record record.txt"
-
-DISPLAY=localhost:1.0 xvfb-run -a bash -c $CMD
+USERNAME=$(id -u -n)
+Xvfb :1 -screen 0 1280x1024x24 -auth localhost &
+export DISPLAY=:1
+$PYTHON setup.py install --single-version-externally-managed --record record.txt
+killall -u $USERNAME Xvfb
