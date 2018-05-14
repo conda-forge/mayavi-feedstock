@@ -14,14 +14,16 @@ Summary: The Mayavi scientific data 3-dimensional visualizers
 Current build status
 ====================
 
-Linux: [![Circle CI](https://circleci.com/gh/conda-forge/mayavi-feedstock.svg?style=shield)](https://circleci.com/gh/conda-forge/mayavi-feedstock)
-OSX: ![](https://cdn.rawgit.com/conda-forge/conda-smithy/90845bba35bec53edac7a16638aa4d77217a3713/conda_smithy/static/disabled.svg)
-Windows: [![AppVeyor](https://ci.appveyor.com/api/projects/status/github/conda-forge/mayavi-feedstock?svg=True)](https://ci.appveyor.com/project/conda-forge/mayavi-feedstock/branch/master)
+[![Linux](https://img.shields.io/circleci/project/github/conda-forge/mayavi-feedstock/master.svg?label=Linux)](https://circleci.com/gh/conda-forge/mayavi-feedstock)
+[![Windows](https://img.shields.io/appveyor/ci/conda-forge/mayavi-feedstock/master.svg?label=Windows)](https://ci.appveyor.com/project/conda-forge/mayavi-feedstock/branch/master)
+![OSX disabled](https://img.shields.io/badge/OSX-disabled-lightgrey.svg)
 
 Current release info
 ====================
-Version: [![Anaconda-Server Badge](https://anaconda.org/conda-forge/mayavi/badges/version.svg)](https://anaconda.org/conda-forge/mayavi)
-Downloads: [![Anaconda-Server Badge](https://anaconda.org/conda-forge/mayavi/badges/downloads.svg)](https://anaconda.org/conda-forge/mayavi)
+
+| Name | Downloads | Version | Platforms |
+| --- | --- | --- | --- |
+| [![Conda Recipe](https://img.shields.io/badge/recipe-mayavi-green.svg)](https://anaconda.org/conda-forge/mayavi) | [![Conda Downloads](https://img.shields.io/conda/dn/conda-forge/mayavi.svg)](https://anaconda.org/conda-forge/mayavi) | [![Conda Version](https://img.shields.io/conda/vn/conda-forge/mayavi.svg)](https://anaconda.org/conda-forge/mayavi) | [![Conda Platforms](https://img.shields.io/conda/pn/conda-forge/mayavi.svg)](https://anaconda.org/conda-forge/mayavi) |
 
 Installing mayavi
 =================
