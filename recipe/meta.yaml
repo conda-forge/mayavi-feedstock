@@ -18,7 +18,6 @@ build:
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
-  skip: True  # [osx]
 
 requirements:
   build:
