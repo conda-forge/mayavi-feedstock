@@ -30,6 +30,7 @@ requirements:
     - vtk 8.1.*
     - traitsui
     - apptools
+    - sphinx  # [osx]
   run:
     - python
     - numpy >=1.8   # [not (win and (py35 or py36))]
