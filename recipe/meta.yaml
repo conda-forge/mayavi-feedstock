@@ -11,9 +11,6 @@ source:
 
 build:
   number: 0
-  features:
-    - vc14  # [win and py35]
-    - vc14  # [win and py36]
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
@@ -21,11 +18,13 @@ build:
 
 requirements:
   build:
-    - toolchain
+    - {{ compiler('fortran') }}
+    - {{ compiler('c') }}
+  host:
     - python
-    - numpy 1.8.*   # [not (win and (py35 or py36))]
-    - numpy 1.9.*   # [win and py35]
-    - numpy 1.11.*  # [win and py36]
+    - numpy         # [not (win and (py35 or py36))]
+    - numpy         # [win and py35]
+    - numpy         # [win and py36]
     - setuptools
     - vtk 8.1.*
     - traitsui
@@ -33,14 +32,14 @@ requirements:
     - sphinx  # [osx]
   run:
     - python
-    - numpy >=1.8   # [not (win and (py35 or py36))]
-    - numpy >=1.9   # [win and py35]
-    - numpy >=1.11  # [win and py36]
+    - {{ pin_compatible('numpy') }}    # [not (win and (py35 or py36))]
+    - {{ pin_compatible('numpy') }}    # [win and py35]
+    - {{ pin_compatible('numpy') }}   # [win and py36]
     - vtk 8.1.*
     - traitsui
     - apptools
     - envisage
-    - pyqt >=4,<6
+    - pyqt
     - setuptools
 
 test:
