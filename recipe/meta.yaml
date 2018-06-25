@@ -39,7 +39,7 @@ requirements:
     - traitsui
     - apptools
     - envisage
-    - pyqt
+    - pyqt >=4,<6
     - setuptools
 
 test:
