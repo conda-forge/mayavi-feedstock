@@ -10,11 +10,11 @@ source:
   sha256: 84f31c4dca607700e5b4da6ed57c4ba26e28896acc54ca55384a9221de4156d3
 
 build:
-  number: 0
+  number: 1
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
-  skip: True  # [(win and py27) or osx]
+  skip: True  # [(win and py27)]
 
 requirements:
   build:
