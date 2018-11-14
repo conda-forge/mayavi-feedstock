@@ -45,6 +45,7 @@ test:
     - tvtk
     - tvtk.array_ext
     - mayavi
+    - mayavi.mlab
 
 about:
   home: https://github.com/enthought/mayavi
