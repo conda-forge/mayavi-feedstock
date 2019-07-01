@@ -1,4 +1,4 @@
-{% set version = "4.6.2" %}
+{% set version = "4.7.0" %}
 
 package:
   name: mayavi
@@ -7,10 +7,10 @@ package:
 source:
   fn: mayavi-{{ version }}.tar.gz
   url: https://github.com/enthought/mayavi/archive/{{ version }}.tar.gz
-  sha256: d4da92ecd54d0f812d5161e6b06fc8578eb4b6c5641fcdc2d7d3dee1ba7e1463
+  sha256: 76c6a24e2e5d498cb535edcd57f9779a86a02e705682bba4363b846b83d8d258
 
 build:
-  number: 5
+  number: 0
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
