@@ -10,7 +10,7 @@ source:
   sha256: d679daf930751f0c531938f4664a51ac4bed994a807488ca5ea5a8c15fabf184
 
 build:
-  number: 0
+  number: 1
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
