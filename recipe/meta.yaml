@@ -23,7 +23,7 @@ requirements:
   host:
     - python
     - numpy
-    - setuptools
+    - pip
     - vtk 8.2.0
     - traitsui
     - apptools
