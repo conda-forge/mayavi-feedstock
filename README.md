@@ -194,6 +194,5 @@ Feedstock Maintainers
 * [@cadair](https://github.com/cadair/)
 * [@dfroger](https://github.com/dfroger/)
 * [@grlee77](https://github.com/grlee77/)
-* [@hadim](https://github.com/hadim/)
 * [@msarahan](https://github.com/msarahan/)
 
