@@ -33,6 +33,7 @@ requirements:
     - {{ pin_compatible('numpy') }}
     - vtk 8.2.0
     - traitsui
+    - pyface
     - apptools
     - envisage
     - pyqt >=4,<6
