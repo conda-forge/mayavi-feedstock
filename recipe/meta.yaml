@@ -24,14 +24,14 @@ requirements:
     - python
     - numpy
     - pip
-    - vtk >=8.2.0
+    - vtk
     - traitsui
     - apptools
     - sphinx  # [osx]
   run:
     - python
     - {{ pin_compatible('numpy') }}
-    - vtk >=8.2.0
+    - vtk
     - traitsui
     - pyface
     - apptools
