@@ -27,4 +27,4 @@ python:
 target_platform:
 - osx-64
 vtk:
-- 8.2.0
+- 9.0.1
