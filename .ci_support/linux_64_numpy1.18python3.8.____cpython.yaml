@@ -27,7 +27,7 @@ python:
 target_platform:
 - linux-64
 vtk:
-- 9.0.3
+- 9.1.0
 zip_keys:
 - - c_compiler_version
   - fortran_compiler_version
