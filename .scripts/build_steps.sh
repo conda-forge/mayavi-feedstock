@@ -44,7 +44,7 @@ source run_conda_forge_build_setup
 # "recipe/yum_requirements.txt" file. After updating that file,
 # run "conda smithy rerender" and this line will be updated
 # automatically.
-/usr/bin/sudo -n yum install -y libXt-devel mesa-libGLU-devel xorg-x11-server-Xvfb
+/usr/bin/sudo -n yum install -y libXt-devel mesa-libGLU-devel xorg-x11-server-Xvfb psmisc
 
 
 # make the build number clobber
