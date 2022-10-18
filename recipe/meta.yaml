@@ -1,4 +1,4 @@
-{% set version = "4.8.0" %}
+{% set version = "4.8.1" %}
 
 package:
   name: mayavi
@@ -7,7 +7,7 @@ package:
 source:
   fn: mayavi-{{ version }}.tar.gz
   url: https://github.com/enthought/mayavi/archive/{{ version }}.tar.gz
-  sha256: 71e76b005613bbfdca0e05caab634aea2b770e2559f85fed28d8704bbcaab8fd
+  sha256: 903dc4fe340ddfbb5245b3da92d244912b36f2043aaeea938788689fb965cb1c
 
 build:
   number: 0
