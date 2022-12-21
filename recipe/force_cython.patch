@@ -1,11 +1,8 @@
-diff --git a/setup.cfg b/setup.cfg
-index 212a94ac..1c90ba6f 100644
---- a/setup.cfg
-+++ b/setup.cfg
-@@ -6,3 +6,6 @@ filterwarnings =
-     ignore:Workbench will be moved from pyface:PendingDeprecationWarning
-     # We call deprecated methods and classes in our tests, and there are many variants for how the parentheticals are formatted
-     ignore:Call to deprecated .*. \((This|Use|Please|Deprecated|Deprecating|Removed|Part|no|renamed) .*\) -- Deprecated since version.*:DeprecationWarning
-+
+diff --git a/tvtk/setup.cfg b/tvtk/setup.cfg
+new file mode 100644
+index 00000000..b24295f6
+--- /dev/null
++++ b/tvtk/setup.cfg
+@@ -0,0 +1,2 @@
 +[build_ext]
 +force=1
