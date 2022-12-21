@@ -24,7 +24,6 @@ requirements:
     - numpy                                  # [build_platform != target_platform]
     - vtk                                    # [build_platform != target_platform]
     - qt-main                                # [build_platform != target_platform]
-    - cython                                 # [build_platform != target_platform]
     - {{ compiler('fortran') }}
     - {{ compiler('c') }}
   host:
@@ -36,7 +35,6 @@ requirements:
     - traitsui
     - apptools
     - sphinx  # [osx]
-    - cython
   run:
     - python
     - {{ pin_compatible('numpy') }}
