@@ -1,8 +1,5 @@
-diff --git a/tvtk/setup.cfg b/tvtk/setup.cfg
-new file mode 100644
-index 00000000..b24295f6
---- /dev/null
-+++ b/tvtk/setup.cfg
+--- /dev/null	2022-12-21 07:47:27
++++ ./tvtk/setup.cfg	2022-12-21 07:43:55
 @@ -0,0 +1,2 @@
 +[build_ext]
 +force=1
