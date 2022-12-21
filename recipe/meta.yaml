@@ -8,9 +8,6 @@ source:
   fn: mayavi-{{ version }}.tar.gz
   url: https://github.com/enthought/mayavi/archive/{{ version }}.tar.gz
   sha256: 903dc4fe340ddfbb5245b3da92d244912b36f2043aaeea938788689fb965cb1c
-  patches:
-    # This can be removed once the sdist is Python 3.11 compatible
-    - force_cython.patch
 
 build:
   number: 3
