@@ -1,3 +1,4 @@
+echo Running cython
 del tvtk\src\array_ext.c
 cython tvtk\src\array_ext.pyx
 %PYTHON% -m pip install . --no-deps -vv
