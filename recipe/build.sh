@@ -8,10 +8,6 @@ if [ "$unamestr" != 'Darwin' ]; then
 	export DISPLAY=:1
 fi
 
-# This cythonizing can be removed once tvtk/src/array_ext.c is 3.11-compatible
-echo "Running cython"
-rm tvtk/src/array_ext.c
-cython -3 tvtk/src/array_ext.pyx
 $PYTHON -m pip install . --no-deps -vv
 
 if [ "$unamestr" != 'Darwin' ]; then
