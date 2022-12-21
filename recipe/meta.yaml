@@ -36,6 +36,7 @@ requirements:
     - traitsui
     - apptools
     - sphinx  # [osx]
+    - cython
   run:
     - python
     - {{ pin_compatible('numpy') }}
