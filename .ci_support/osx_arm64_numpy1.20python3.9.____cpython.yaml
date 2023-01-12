@@ -27,7 +27,7 @@ qt_main:
 target_platform:
 - osx-arm64
 vtk:
-- 9.2.2
+- 9.2.5
 zip_keys:
 - - c_compiler_version
   - fortran_compiler_version
