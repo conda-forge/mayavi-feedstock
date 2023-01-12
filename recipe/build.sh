@@ -8,7 +8,7 @@ if [ "$unamestr" != 'Darwin' ]; then
 	export DISPLAY=:1
 fi
 
-$PYTHON -m pip install . --no-deps -vv
+$PYTHON -um pip install . --no-deps -vv
 
 if [ "$unamestr" != 'Darwin' ]; then
 	killall -u $USERNAME Xvfb
