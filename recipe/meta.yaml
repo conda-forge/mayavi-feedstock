@@ -14,7 +14,7 @@ source:
     - vtk925.patch
 
 build:
-  number: 4
+  number: 5
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
