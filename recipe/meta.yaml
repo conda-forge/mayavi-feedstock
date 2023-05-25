@@ -14,7 +14,7 @@ source:
     - vtk925.patch
 
 build:
-  number: 5
+  number: 6
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
@@ -34,15 +34,15 @@ requirements:
     - pip
     - vtk
     - qt-main
-    - traitsui
+    - traitsui <8
     - apptools
     - sphinx  # [osx]
   run:
     - python
     - {{ pin_compatible('numpy') }}
     - vtk
-    - traitsui
-    - pyface
+    - traitsui <8
+    - pyface <8
     - apptools
     - envisage
     - pyqt >=4,<6
