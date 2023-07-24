@@ -24,22 +24,22 @@ build:
 
 requirements:
   build:
-    - python                                 # [build_platform != target_platform]
+    - {{ compiler('c') }}
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
+    - python                                 # [build_platform != target_platform]
     - numpy                                  # [build_platform != target_platform]
+    - cython                                 # [build_platform != target_platform]
     - vtk                                    # [build_platform != target_platform]
     - qt-main                                # [build_platform != target_platform]
-    - {{ compiler('fortran') }}
-    - {{ compiler('c') }}
   host:
     - python
-    - numpy
     - pip
+    - cython
+    - numpy
     - vtk
     - qt-main
     - traitsui
     - apptools
-    - sphinx  # [osx]
   run:
     - python
     - {{ pin_compatible('numpy') }}
