@@ -9,34 +9,37 @@ source:
   url: https://github.com/enthought/mayavi/archive/{{ version }}.tar.gz
   sha256: 903dc4fe340ddfbb5245b3da92d244912b36f2043aaeea938788689fb965cb1c
   patches:
-    # Both of these should be fixed by https://github.com/enthought/mayavi/pull/1199
+    # Waiting for a release so we can drop these patches:
+    # https://github.com/enthought/mayavi/pull/1199
     - cython_3.patch
     - vtk925.patch
+    # https://github.com/enthought/mayavi/pull/1255
+    - traitsui-8.patch
 
 build:
-  number: 5
+  number: 6
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
 
 requirements:
   build:
-    - python                                 # [build_platform != target_platform]
+    - {{ compiler('c') }}
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
+    - python                                 # [build_platform != target_platform]
     - numpy                                  # [build_platform != target_platform]
+    - cython                                 # [build_platform != target_platform]
     - vtk                                    # [build_platform != target_platform]
     - qt-main                                # [build_platform != target_platform]
-    - {{ compiler('fortran') }}
-    - {{ compiler('c') }}
   host:
     - python
-    - numpy
     - pip
+    - cython
+    - numpy
     - vtk
     - qt-main
     - traitsui
     - apptools
-    - sphinx  # [osx]
   run:
     - python
     - {{ pin_compatible('numpy') }}
