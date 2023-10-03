@@ -17,7 +17,7 @@ source:
     - traitsui-8.patch
 
 build:
-  number: 6
+  number: 7
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main

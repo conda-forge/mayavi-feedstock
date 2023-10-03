@@ -1,11 +1,17 @@
+MACOSX_DEPLOYMENT_TARGET:
+- '11.0'
 c_compiler:
-- vs2019
+- clang
+c_compiler_version:
+- '13'
 channel_sources:
 - conda-forge
 channel_targets:
 - conda-forge main
+macos_machine:
+- arm64-apple-darwin20.0.0
 numpy:
-- '1.21'
+- '1.22'
 pin_run_as_build:
   python:
     min_pin: x.x
@@ -15,7 +21,7 @@ python:
 qt_main:
 - '5.15'
 target_platform:
-- win-64
+- osx-arm64
 vtk:
 - 9.2.6
 zip_keys:
