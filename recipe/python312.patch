@@ -1,5 +1,5 @@
 diff --git a/setup.py b/setup.py
-index b1342c3f..e772bc95 100644
+index b1342c3f..25763876 100644
 --- a/setup.py
 +++ b/setup.py
 @@ -8,15 +8,26 @@
@@ -9,16 +9,18 @@ index b1342c3f..e772bc95 100644
 +my_build_src_super = object
 +build_src_run = lambda *args, **kwargs: None
  try:
-     import numpy
+-    import numpy
 -    from numpy.distutils.command import build, install_data, build_src
 -    from numpy.distutils.core import setup
-     HAS_NUMPY = True
+-    HAS_NUMPY = True
 -except ImportError:
-+    WHY_NO_NUMPY = ""
++    import numpy  # noqa: F401
 +except ImportError as e:
      HAS_NUMPY = False
 +    WHY_NO_NUMPY = str(e)
 +else:
++    HAS_NUMPY = True
++    WHY_NO_NUMPY = ""
      from distutils.command import build, install_data
      from distutils.core import setup
 +    try:
