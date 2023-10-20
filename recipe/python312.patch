@@ -1,8 +1,8 @@
 diff --git a/setup.py b/setup.py
-index b1342c3f..79aacbe4 100644
+index b1342c3f..a7a572e5 100644
 --- a/setup.py
 +++ b/setup.py
-@@ -8,15 +8,26 @@
+@@ -8,15 +8,28 @@
  import setuptools
  from setuptools import Command
  
@@ -14,11 +14,14 @@ index b1342c3f..79aacbe4 100644
 +    from numpy.distutils.command import build, install_data
      from numpy.distutils.core import setup
      HAS_NUMPY = True
- except ImportError:
+-except ImportError:
 -    HAS_NUMPY = False
++    WHY_NO_NUMPY = ""
++except ImportError as e:
      from distutils.command import build, install_data
      from distutils.core import setup
 +    HAS_NUMPY = False
++    WHY_NO_NUMPY = str(e)
 +else:
 +    try:
 +        from numpy.distutils.command import build_src
@@ -31,7 +34,7 @@ index b1342c3f..79aacbe4 100644
  import io
  import os
  import time
-@@ -124,8 +135,8 @@ class GenDocs(Command):
+@@ -124,8 +137,8 @@ class GenDocs(Command):
          mlab_ref_dir = join(DEFAULT_INPUT_DIR, 'mayavi', 'auto')
  
          source_path = 'mayavi'
@@ -42,7 +45,7 @@ index b1342c3f..79aacbe4 100644
          target_path = mlab_ref_dir
          target_time = self.latest_modified(target_path,
                                             ignore_dirs=excluded_dirs)[0]
-@@ -288,7 +299,7 @@ class MyBuild(build.build):
+@@ -288,7 +301,7 @@ class MyBuild(build.build):
          build.build.run(self)
  
  
@@ -51,7 +54,7 @@ index b1342c3f..79aacbe4 100644
      """Build hook to generate the TVTK ZIP files.
  
      We do it here also because for editable installs, setup.py build is not
-@@ -297,7 +308,7 @@ class MyBuildSrc(build_src.build_src):
+@@ -297,7 +310,7 @@ class MyBuildSrc(build_src.build_src):
  
      def run(self):
          build_tvtk_classes_zip()
@@ -60,3 +63,15 @@ index b1342c3f..79aacbe4 100644
  
  
  class MyDevelop(develop.develop):
+@@ -418,8 +431,9 @@ config['packages'] += packages
+ 
+ 
+ if MODE != 'info' and not HAS_NUMPY:
+-    msg = '''
+-    Numpy is required to build Mayavi correctly, please install it first.
++    msg = f'''
++    Numpy is required to build Mayavi correctly, please install it first, got:
++    {WHY_NO_NUMPY}
+     '''
+     print('*'*80)
+     print(msg)
