@@ -17,6 +17,7 @@ source:
     - traitsui-8.patch
     # https://github.com/enthought/mayavi/pull/1281
     - python312.patch
+    - include_dirs.patch
 
 build:
   number: 8
