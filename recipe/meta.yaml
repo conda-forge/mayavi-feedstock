@@ -9,7 +9,9 @@ source:
   url: https://github.com/enthought/mayavi/archive/{{ version }}.tar.gz
   sha256: 903dc4fe340ddfbb5245b3da92d244912b36f2043aaeea938788689fb965cb1c
   patches:
-    # Waiting for a release so we can drop this patch:
+    # Waiting for a release so we can drop this patch, generated in the mayavi source dir with:
+    # git diff 4.8.1 origin/include -- . ':(exclude)*.yml' > ../mayavi-feedstock/recipe/since_release.patch
+    # while on the "larsoner/include" branch
     - since_release.patch
 
 build:
