@@ -7,7 +7,7 @@ index 4c648297..b9329e7c 100644
  from traitsui.api import View, Group, Item
  from tvtk.api import tvtk
 -from tvtk.common import vtk_major_version, vtk_minor_version
-
+ 
  # Local imports
  from mayavi.core.filter import Filter
 @@ -166,19 +165,13 @@ class Threshold(Filter):
@@ -21,7 +21,7 @@ index 4c648297..b9329e7c 100644
 +        fil.threshold_between(new_value, self.upper_threshold)
          fil.update()
          self.data_changed = True
-
+ 
      def _upper_threshold_changed(self, new_value):
          fil = self.threshold_filter
 -        if (vtk_major_version, vtk_minor_version) >= (9, 1):
@@ -31,7 +31,7 @@ index 4c648297..b9329e7c 100644
 +        fil.threshold_between(self.lower_threshold, new_value)
          fil.update()
          self.data_changed = True
-
+ 
 @@ -277,12 +270,8 @@ class Threshold(Filter):
              return
          fil = new
@@ -46,7 +46,7 @@ index 4c648297..b9329e7c 100644
 +                              self.upper_threshold)
          fil.update()
          self._set_outputs([fil])
-
+ 
 diff --git a/mayavi/tests/test_mlab_source.py b/mayavi/tests/test_mlab_source.py
 index 49c6e87c..554431a8 100644
 --- a/mayavi/tests/test_mlab_source.py
@@ -69,7 +69,7 @@ index 49c6e87c..554431a8 100644
 -        self.assertEqual(np.all(src.scalars == s), True)
 +        self.assertEqual(np.alltrue(src.vectors == v), True)
 +        self.assertEqual(np.alltrue(src.scalars == s), True)
-
+ 
      def check_dataset(self):
          """Check the TVTK dataset."""
          x, y, z, v, s, src = self.get_data()
@@ -87,7 +87,7 @@ index 49c6e87c..554431a8 100644
 -        self.assertEqual(np.all(sc == s.ravel()), True)
 +        self.assertEqual(np.alltrue(vec == v), True)
 +        self.assertEqual(np.alltrue(sc == s.ravel()), True)
-
+ 
      def test_geometry_filter_works(self):
          # This tests the bug #1071 and segfaults without the fix on VTK 9.x.
 @@ -217,27 +217,27 @@ class TestMVerticalSource(unittest.TestCase):
@@ -107,7 +107,7 @@ index 49c6e87c..554431a8 100644
 +        self.assertEqual(np.alltrue(src.vectors[:, -1] == s), True)
 +        self.assertEqual(np.alltrue(src.vectors[:, :-1] == 1), True)
 +        self.assertEqual(np.alltrue(src.scalars == s), True)
-
+ 
      def check_dataset(self):
          """Check the TVTK dataset."""
          x, y, z, s, src = self.get_data()
@@ -127,7 +127,7 @@ index 49c6e87c..554431a8 100644
 +        self.assertEqual(np.alltrue(vec[:, -1] == s), True)
 +        self.assertEqual(np.alltrue(vec[:, :-1] == 1), True)
 +        self.assertEqual(np.alltrue(sc == s), True)
-
+ 
      def test_reset(self):
          "Test the reset method."
 @@ -323,12 +323,12 @@ class TestMArraySource(unittest.TestCase):
@@ -145,7 +145,7 @@ index 49c6e87c..554431a8 100644
 -        self.assertEqual(np.all(src.scalars == s), True)
 +        self.assertEqual(np.alltrue(src.vectors == v), True)
 +        self.assertEqual(np.alltrue(src.scalars == s), True)
-
+ 
      def check_dataset(self):
          """Check the TVTK dataset."""
 @@ -348,9 +348,9 @@ class TestMArraySource(unittest.TestCase):
@@ -157,7 +157,7 @@ index 49c6e87c..554431a8 100644
          s1 = s.transpose()
 -        self.assertEqual(np.all(sc.ravel() == s1.ravel()), True)
 +        self.assertEqual(np.alltrue(sc.ravel() == s1.ravel()), True)
-
+ 
      def test_reset(self):
          "Test the reset method."
 @@ -447,22 +447,22 @@ class TestMLineSource(unittest.TestCase):
@@ -173,7 +173,7 @@ index 49c6e87c..554431a8 100644
          # Check the scalars.
 -        self.assertEqual(np.all(src.scalars == s), True)
 +        self.assertEqual(np.alltrue(src.scalars == s), True)
-
+ 
      def check_dataset(self):
          """Check the TVTK dataset."""
          x, y, z, s, src = self.get_data()
@@ -188,12 +188,12 @@ index 49c6e87c..554431a8 100644
          sc = src.dataset.point_data.scalars.to_array()
 -        self.assertEqual(np.all(sc == s), True)
 +        self.assertEqual(np.alltrue(sc == s), True)
-
+ 
      def test_reset(self):
          "Test the reset method."
 @@ -613,10 +613,10 @@ class TestMArray2DSource(unittest.TestCase):
          x, y, s, src = self.get_data()
-
+ 
          # Check if points are set correctly.
 -        self.assertEqual(np.all(src.x == x), True)
 -        self.assertEqual(np.all(src.y == y), True)
@@ -202,20 +202,20 @@ index 49c6e87c..554431a8 100644
          # Check the scalars.
 -        self.assertEqual(np.all(src.scalars == s), True)
 +        self.assertEqual(np.alltrue(src.scalars == s), True)
-
+ 
      def check_dataset(self):
          """Check the TVTK dataset."""
 @@ -635,7 +635,7 @@ class TestMArray2DSource(unittest.TestCase):
-
+ 
          sc = src.dataset.point_data.scalars.to_array()
          s1 = s.transpose()
 -        self.assertEqual(np.all(sc.ravel() == s1.ravel()), True)
 +        self.assertEqual(np.alltrue(sc.ravel() == s1.ravel()), True)
-
+ 
      def test_reset(self):
          x, y, s, src = self.get_data()
 @@ -704,17 +704,17 @@ class TestMGridSource(unittest.TestCase):
-
+ 
          # Check if points are set correctly.
          self.assertEqual(
 -            np.all(src.points[:, 0].ravel() == x.ravel()), True
@@ -230,15 +230,15 @@ index 49c6e87c..554431a8 100644
 +            np.alltrue(src.points[:, 2].ravel() == z.ravel()), True
          )
          # Check the  scalars.
-
+ 
 -        self.assertEqual(np.all(src.scalars == s), True)
 +        self.assertEqual(np.alltrue(src.scalars == s), True)
-
+ 
      def check_dataset(self):
          """Check the TVTK dataset."""
 @@ -722,11 +722,11 @@ class TestMGridSource(unittest.TestCase):
          # Check if the dataset is setup right.
-
+ 
          pts = src.dataset.points.to_array()
 -        self.assertEqual(np.all(pts[:, 0].ravel() == x.ravel()), True)
 -        self.assertEqual(np.all(pts[:, 1].ravel() == y.ravel()), True)
@@ -249,18 +249,18 @@ index 49c6e87c..554431a8 100644
          sc = src.dataset.point_data.scalars.to_array()
 -        self.assertEqual(np.all(sc == s.ravel()), True)
 +        self.assertEqual(np.alltrue(sc == s.ravel()), True)
-
+ 
      def test_reset(self):
          "Test the reset method."
 @@ -819,17 +819,17 @@ class TestMArray2DSourceNoArgs(unittest.TestCase):
          # Check if points are set correctly.
-
+ 
          if x is not None and y is not None:
 -            self.assertEqual(np.all(src.x == x), True)
 -            self.assertEqual(np.all(src.y == y), True)
 +            self.assertEqual(np.alltrue(src.x == x), True)
 +            self.assertEqual(np.alltrue(src.y == y), True)
-
+ 
          else:
              nx, ny = s.shape
              x1, y1 = np.mgrid[-nx/2.:nx/2, -ny/2.:ny/2]
@@ -268,25 +268,25 @@ index 49c6e87c..554431a8 100644
 -            self.assertEqual(np.all(src.y == y1), True)
 +            self.assertEqual(np.alltrue(src.x == x1), True)
 +            self.assertEqual(np.alltrue(src.y == y1), True)
-
+ 
          # Check the scalars.
 -        self.assertEqual(np.all(src.scalars == s), True)
 +        self.assertEqual(np.alltrue(src.scalars == s), True)
-
+ 
      def check_dataset(self):
          """Check the TVTK dataset."""
 @@ -853,7 +853,7 @@ class TestMArray2DSourceNoArgs(unittest.TestCase):
-
+ 
          sc = src.dataset.point_data.scalars.to_array()
          s1 = s.transpose()
 -        self.assertEqual(np.all(sc.ravel() == s1.ravel()), True)
 +        self.assertEqual(np.alltrue(sc.ravel() == s1.ravel()), True)
-
+ 
      def test_reset(self):
          "Test the reset method."
 @@ -912,11 +912,11 @@ class TestMTriangularMeshSource(unittest.TestCase):
          x, y, z, triangles, s, src = self.get_data()
-
+ 
          # Check if points are set correctly.
 -        self.assertEqual(np.all(src.x == x), True)
 -        self.assertEqual(np.all(src.y == y), True)
@@ -297,7 +297,7 @@ index 49c6e87c..554431a8 100644
          # Check the scalars.
 -        self.assertEqual(np.all(src.scalars == s), True)
 +        self.assertEqual(np.alltrue(src.scalars == s), True)
-
+ 
      def test_reset(self):
          "Test the reset method."
 diff --git a/mayavi/tests/test_set_active_attribute.py b/mayavi/tests/test_set_active_attribute.py
@@ -341,7 +341,7 @@ index 82e7ba42..09c7af8f 100644
 @@ -3,24 +3,36 @@
  # Copyright (c) 2008-2022 by Enthought, Inc.
  # All rights reserved.
-
+ 
 -from setuptools import Command, Extension, setup, find_packages
 -from setuptools.command.build_py import build_py
 -from setuptools.command.develop import develop
@@ -350,7 +350,7 @@ index 82e7ba42..09c7af8f 100644
 +# numpy.distutils does the Wrong(TM) thing.
 +import setuptools
 +from setuptools import Command
-
+ 
 +try:
 +    import numpy
 +    from numpy.distutils.command import build, install_data, build_src
@@ -371,24 +371,24 @@ index 82e7ba42..09c7af8f 100644
  from os.path import (abspath, basename, dirname, exists, getmtime, isdir,
                       join, split)
 -from pathlib import Path
-
+ 
 -from tvtk._setup import can_compile_extensions, gen_tvtk_classes_zip  # noqa
 +from distutils.command import clean
 +from distutils import log
 +from setuptools.command import develop
 +
-
+ 
 -MY_DIR = os.path.dirname(__file__)
  MODE = 'normal'
  if len(sys.argv) >= 2 and \
     ('--help' in sys.argv[1:] or
 @@ -48,7 +60,7 @@ class GenDocs(Command):
          ]
-
+ 
      def latest_modified(self, the_path, filetypes='', ignore_dirs=''):
 -        """Traverse a path looking for the most recently modified file.
 +        """Traverses a path looking for the most recently modified file
-
+ 
          Parameters
          ----------
 @@ -67,7 +79,12 @@ class GenDocs(Command):
@@ -403,10 +403,10 @@ index 82e7ba42..09c7af8f 100644
 +
          file_re = re.compile(filetypes)
          dir_re = re.compile(ignore_dirs)
-
+ 
 @@ -98,7 +115,8 @@ class GenDocs(Command):
              return getmtime(the_path), the_path
-
+ 
      def mlab_reference(self):
 -        """If mayavi is installed, run the mlab_reference generator."""
 +        """ If mayavi is installed, run the mlab_reference generator.
@@ -416,7 +416,7 @@ index 82e7ba42..09c7af8f 100644
          # mayavi-specific.
 @@ -106,8 +124,8 @@ class GenDocs(Command):
          mlab_ref_dir = join(DEFAULT_INPUT_DIR, 'mayavi', 'auto')
-
+ 
          source_path = 'mayavi'
 -        sources = r'(\.py)|(\.rst)$'
 -        excluded_dirs = r'^\.'
@@ -432,13 +432,13 @@ index 82e7ba42..09c7af8f 100644
 -            except Exception:
 +            except:
                  pass
-
+ 
      def example_files(self):
 -        """Generate the documentation files for the examples."""
 +        """ Generate the documentation files for the examples.
 +        """
          mlab_ref_dir = join(DEFAULT_INPUT_DIR, 'mayavi', 'auto')
-
+ 
          source_path = join('examples', 'mayavi')
 @@ -196,7 +215,8 @@ def list_doc_projects():
      """ List the different source directories under DEFAULT_INPUT_DIR
@@ -451,7 +451,7 @@ index 82e7ba42..09c7af8f 100644
      # Check to make sure we're using non-hidden directories.
      source_dirs = [listing for listing in source_list
 @@ -238,29 +258,139 @@ def _tvtk_built_recently(zipfile, delay):
-
+ 
  # Our custom distutils hooks
  def build_tvtk_classes_zip():
 +    MY_DIR = os.path.dirname(__file__)
@@ -476,7 +476,7 @@ index 82e7ba42..09c7af8f 100644
 +
 +        We sub-class numpy.distutils' build command because we're relying on
 +        numpy.distutils' setup method to build python extensions.
-
+ 
 +    """
 +
 +    def run(self):
@@ -490,7 +490,7 @@ index 82e7ba42..09c7af8f 100644
 +    We do it here also because for editable installs, setup.py build is not
 +    called.
 +    """
-
+ 
 -class MyBuildPy(build_py):
 -    """A build hook to generate the documentation."""
 +    def run(self):
@@ -505,7 +505,7 @@ index 82e7ba42..09c7af8f 100644
 +        have an implementation.
 +
 +    """
-
+ 
      def run(self):
 +        # Make sure that the 'build_src' command will
 +        # always be inplace when we do a 'develop'.
@@ -514,7 +514,7 @@ index 82e7ba42..09c7af8f 100644
 +        # tvtk_classes.zip always need to be created on 'develop'.
          build_tvtk_classes_zip()
 -        super().run()
-
+ 
 +        develop.develop.run(self)
 +
 +
@@ -523,11 +523,11 @@ index 82e7ba42..09c7af8f 100644
 +
 +        We subclass numpy.distutils' command because we're relying on
 +        numpy.distutils' setup method to build python extensions.
-
+ 
 -class MyDevelop(develop):
 -    """A hook to build the TVTK ZIP file on develop."""
 +    """
-
+ 
      def run(self):
 +        install_data_command = self.get_finalized_command('install_data')
 +        for project in list_doc_projects():
@@ -593,15 +593,15 @@ index 82e7ba42..09c7af8f 100644
 +    config.add_data_dir('mayavi/preferences')
 +
 +    return config
-
-
+ 
+ 
  ###########################################################################
 @@ -273,14 +403,21 @@ for package, files in build_package_data.items():
      target_path = package.replace('.', os.sep)
      for filename in files:
          shutil.copy(filename, target_path)
 +###########################################################################
-
+ 
 -try:
 -    import numpy as np
 -except Exception:
@@ -627,9 +627,9 @@ index 82e7ba42..09c7af8f 100644
 @@ -289,43 +426,16 @@ if not HAS_NUMPY and MODE != 'info':
      print('*'*80)
      raise RuntimeError(msg)
-
+ 
 -###########################################################################
-
+ 
  # The actual setup call
  if __name__ == '__main__':
 -    ext_modules = list()
@@ -707,15 +707,15 @@ index bad08ce2..b5413583 100644
 +++ b/tvtk/common.py
 @@ -10,7 +10,6 @@ import re
  import vtk
-
+ 
  vtk_major_version = vtk.vtkVersion.GetVTKMajorVersion()
 -vtk_minor_version = vtk.vtkVersion.GetVTKMinorVersion()
-
-
+ 
+ 
  ######################################################################
 @@ -50,21 +49,18 @@ def get_tvtk_name(vtk_name):
        'XMLDataReader'
-
+ 
      """
 -    name = vtk_name
 -    if name.startswith('vtk'):
@@ -744,8 +744,8 @@ index bad08ce2..b5413583 100644
 +            return name
 +    else:
 +        return vtk_name
-
-
+ 
+ 
  def is_version_9():
 diff --git a/tvtk/pyface/ui/qt4/QVTKRenderWindowInteractor.py b/tvtk/pyface/ui/qt4/QVTKRenderWindowInteractor.py
 index 5d125d8e..e00295e8 100644
@@ -763,7 +763,7 @@ index 5d125d8e..e00295e8 100644
 @@ -69,125 +67,56 @@ try:
  except (ImportError, AttributeError):
      pass
-
+ 
 -# Check the compatibility of PyQtImpl and QVTKRWIBase
 -if QVTKRWIBase != "QWidget":
 -    if PyQtImpl in ["PySide6", "PyQt6"] and QVTKRWIBase == "QOpenGLWidget":
@@ -881,7 +881,7 @@ index 5d125d8e..e00295e8 100644
 +    from PySide6.QtCore import Qt, QTimer, QObject, QSize, QEvent
  else:
      raise ImportError("Unknown PyQt implementation " + repr(PyQtImpl))
-
+ 
 +
  # Define types for base class, based on string
  if QVTKRWIBase == "QWidget":
@@ -917,11 +917,11 @@ index 5d125d8e..e00295e8 100644
 +    raise ImportError(
 +        "Unknown base class for QVTKRenderWindowInteractor " + QVTKRWIBase
 +    )
-
-
+ 
+ 
  class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
 @@ -261,28 +190,28 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
-
+ 
      # Map between VTK and Qt cursors.
      _CURSOR_MAP = {
 -        0:  CursorShape.ArrowCursor,          # VTK_CURSOR_DEFAULT
@@ -947,12 +947,12 @@ index 5d125d8e..e00295e8 100644
 +        9:  Qt.PointingHandCursor,   # VTK_CURSOR_HAND
 +        10: Qt.CrossCursor,          # VTK_CURSOR_CROSSHAIR
      }
-
+ 
      def __init__(self, parent=None, **kw):
          # the current button
 -        self._ActiveButton = MouseButton.NoButton
 +        self._ActiveButton = Qt.NoButton
-
+ 
          # private attributes
          self.__saveX = 0
          self.__saveY = 0
@@ -961,12 +961,12 @@ index 5d125d8e..e00295e8 100644
 +        self.__saveModifiers = Qt.NoModifier
 +        self.__saveButtons = Qt.NoButton
          self.__wheelDelta = 0
-
+ 
          # do special handling of some keywords:
 @@ -298,17 +227,15 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
          except KeyError:
              rw = None
-
+ 
 -        # create base qt-level widget
 +        # create qt-level widget
          if QVTKRWIBase == "QWidget":
@@ -981,12 +981,12 @@ index 5d125d8e..e00295e8 100644
              QGLWidget.__init__(self, parent)
 -        elif QVTKRWIBase == "QOpenGLWidget":
 -            QOpenGLWidget.__init__(self, parent)
-
+ 
          if rw:  # user-supplied render window
              self._RenderWindow = rw
 @@ -337,11 +264,11 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
              self._pixel_ratio = 1.0
-
+ 
          # do all the necessary qt setup
 -        self.setAttribute(WidgetAttribute.WA_OpaquePaintEvent)
 -        self.setAttribute(WidgetAttribute.WA_PaintOnScreen)
@@ -997,27 +997,27 @@ index 5d125d8e..e00295e8 100644
 -        self.setSizePolicy(QSizePolicy(SizePolicy.Expanding, SizePolicy.Expanding))
 +        self.setFocusPolicy(Qt.WheelFocus)
 +        self.setSizePolicy(QSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding))
-
+ 
          self._Timer = QTimer(self)
          self._Timer.timeout.connect(self.TimerEvent)
 @@ -433,12 +360,12 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
-
+ 
      def HideCursor(self):
          """Hides the cursor."""
 -        self.setCursor(CursorShape.BlankCursor)
 +        self.setCursor(Qt.BlankCursor)
-
+ 
      def ShowCursor(self):
          """Shows the cursor."""
          vtk_cursor = self._Iren.GetRenderWindow().GetCurrentCursor()
 -        qt_cursor = self._CURSOR_MAP.get(vtk_cursor, CursorShape.ArrowCursor)
 +        qt_cursor = self._CURSOR_MAP.get(vtk_cursor, Qt.ArrowCursor)
          self.setCursor(qt_cursor)
-
+ 
      def closeEvent(self, evt):
 @@ -480,14 +407,14 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
          ctrl = shift = False
-
+ 
          if hasattr(ev, 'modifiers'):
 -            if ev.modifiers() & KeyboardModifier.ShiftModifier:
 +            if ev.modifiers() & Qt.ShiftModifier:
@@ -1032,7 +1032,7 @@ index 5d125d8e..e00295e8 100644
 -            if self.__saveModifiers & KeyboardModifier.ControlModifier:
 +            if self.__saveModifiers & Qt.ControlModifier:
                  ctrl = True
-
+ 
          return ctrl, shift
 @@ -507,7 +434,7 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
      def mousePressEvent(self, ev):
@@ -1041,12 +1041,12 @@ index 5d125d8e..e00295e8 100644
 -        if ev.type() == EventType.MouseButtonDblClick:
 +        if ev.type() == QEvent.MouseButtonDblClick:
              repeat = 1
-
+ 
          pxr = self._pixel_ratio
 @@ -516,11 +443,11 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
-
+ 
          self._ActiveButton = ev.button()
-
+ 
 -        if self._ActiveButton == MouseButton.LeftButton:
 +        if self._ActiveButton == Qt.LeftButton:
              self._Iren.LeftButtonPressEvent()
@@ -1056,12 +1056,12 @@ index 5d125d8e..e00295e8 100644
 -        elif self._ActiveButton == MiddleButton:
 +        elif self._ActiveButton == Qt.MidButton:
              self._Iren.MiddleButtonPressEvent()
-
+ 
      def mouseReleaseEvent(self, ev):
 @@ -529,11 +456,11 @@ class QVTKRenderWindowInteractor(QVTKRWIBaseClass):
          self._Iren.SetEventInformationFlipY(int(ev.x()*pxr), int(ev.y()*pxr),
                                              ctrl, shift, chr(0), 0, None)
-
+ 
 -        if self._ActiveButton == MouseButton.LeftButton:
 +        if self._ActiveButton == Qt.LeftButton:
              self._Iren.LeftButtonReleaseEvent()
@@ -1071,11 +1071,11 @@ index 5d125d8e..e00295e8 100644
 -        elif self._ActiveButton == MiddleButton:
 +        elif self._ActiveButton == Qt.MidButton:
              self._Iren.MiddleButtonReleaseEvent()
-
+ 
      def mouseMoveEvent(self, ev):
 @@ -678,98 +605,98 @@ def QVTKRenderWidgetConeExample():
-
-
+ 
+ 
  _keysyms = {
 -    Key.Key_Backspace: 'BackSpace',
 -    Key.Key_Tab: 'Tab',
@@ -1262,8 +1262,8 @@ index 5d125d8e..e00295e8 100644
 +    Qt.Key_NumLock: 'Num_Lock',
 +    Qt.Key_ScrollLock: 'Scroll_Lock',
      }
-
-
+ 
+ 
 diff --git a/tvtk/pyface/ui/qt4/scene.py b/tvtk/pyface/ui/qt4/scene.py
 index 3b9ab1ce..7f9675e7 100644
 --- a/tvtk/pyface/ui/qt4/scene.py
@@ -1271,7 +1271,7 @@ index 3b9ab1ce..7f9675e7 100644
 @@ -37,12 +37,7 @@ from tvtk.pyface import light_manager
  from tvtk.pyface.utils import popup_save
  from tvtk.pyface.tvtk_scene import TVTKScene
-
+ 
 -from .QVTKRenderWindowInteractor import (
 -    QVTKRenderWindowInteractor,
 -    CursorShape,
@@ -1279,42 +1279,42 @@ index 3b9ab1ce..7f9675e7 100644
 -    KeyboardModifier,
 -)
 +from .QVTKRenderWindowInteractor import QVTKRenderWindowInteractor
-
-
+ 
+ 
  ######################################################################
 @@ -96,38 +91,38 @@ class _VTKRenderWindowInteractor(QVTKRenderWindowInteractor):
          scene = self._scene
          camera = scene.camera
-
+ 
 -        if key in [Key.Key_Minus]:
 +        if key in [QtCore.Qt.Key_Minus]:
              camera.zoom(0.8)
              scene.render()
              scene._record_methods('camera.zoom(0.8)\nrender()')
              return
-
+ 
 -        if key in [Key.Key_Equal, Key.Key_Plus]:
 +        if key in [QtCore.Qt.Key_Equal, QtCore.Qt.Key_Plus]:
              camera.zoom(1.25)
              scene.render()
              scene._record_methods('camera.zoom(1.25)\nrender()')
              return
-
+ 
 -        if key in [Key.Key_E, Key.Key_Q, Key.Key_Escape]:
 +        if key in [QtCore.Qt.Key_E, QtCore.Qt.Key_Q, QtCore.Qt.Key_Escape]:
              scene._disable_fullscreen()
              scene.picker.close_picker()
              return
-
+ 
 -        if key in [Key.Key_W]:
 +        if key in [QtCore.Qt.Key_W]:
              return
-
+ 
 -        if key in [Key.Key_R]:
 +        if key in [QtCore.Qt.Key_R]:
              scene._record_methods('reset_zoom()')
              return
-
+ 
 -        if key in [Key.Key_P] and modifiers == KeyboardModifier.NoModifier:
 +        if key in [QtCore.Qt.Key_P] and modifiers == QtCore.Qt.NoModifier:
              pos = self.mapFromGlobal(QtGui.QCursor.pos())
@@ -1322,7 +1322,7 @@ index 3b9ab1ce..7f9675e7 100644
              y = self.height() - pos.y()
              scene.picker.pick(x*self._pixel_ratio, y*self._pixel_ratio)
              return
-
+ 
 -        if key in [Key.Key_F] and modifiers == KeyboardModifier.NoModifier:
 +        if key in [QtCore.Qt.Key_F] and modifiers == QtCore.Qt.NoModifier:
              pos = self.mapFromGlobal(QtGui.QCursor.pos())
@@ -1331,22 +1331,22 @@ index 3b9ab1ce..7f9675e7 100644
 @@ -140,19 +135,19 @@ class _VTKRenderWindowInteractor(QVTKRenderWindowInteractor):
                                        'render()'%list(coord))
              return
-
+ 
 -        if key in [Key.Key_L] and modifiers == KeyboardModifier.NoModifier:
 +        if key in [QtCore.Qt.Key_L] and modifiers == QtCore.Qt.NoModifier:
              scene.light_manager.configure()
              return
-
+ 
 -        if key in [Key.Key_S] and modifiers == KeyboardModifier.NoModifier:
 +        if key in [QtCore.Qt.Key_S] and modifiers == QtCore.Qt.NoModifier:
              fname = popup_save(self.parent())
              if len(fname) != 0:
                  self._scene.save(fname)
              return
-
+ 
 -        shift = ((modifiers & KeyboardModifier.ShiftModifier) == KeyboardModifier.ShiftModifier)
 +        shift = ((modifiers & QtCore.Qt.ShiftModifier) == QtCore.Qt.ShiftModifier)
-
+ 
 -        if key == Key.Key_Left:
 +        if key == QtCore.Qt.Key_Left:
              if shift:
@@ -1355,7 +1355,7 @@ index 3b9ab1ce..7f9675e7 100644
 @@ -164,7 +159,7 @@ class _VTKRenderWindowInteractor(QVTKRenderWindowInteractor):
              scene._record_methods('render()')
              return
-
+ 
 -        if key == Key.Key_Right:
 +        if key == QtCore.Qt.Key_Right:
              if shift:
@@ -1364,7 +1364,7 @@ index 3b9ab1ce..7f9675e7 100644
 @@ -176,7 +171,7 @@ class _VTKRenderWindowInteractor(QVTKRenderWindowInteractor):
              scene._record_methods('render()')
              return
-
+ 
 -        if key == Key.Key_Up:
 +        if key == QtCore.Qt.Key_Up:
              if shift:
@@ -1373,7 +1373,7 @@ index 3b9ab1ce..7f9675e7 100644
 @@ -189,7 +184,7 @@ class _VTKRenderWindowInteractor(QVTKRenderWindowInteractor):
              scene._record_methods('camera.orthogonalize_view_up()\nrender()')
              return
-
+ 
 -        if key == Key.Key_Down:
 +        if key == QtCore.Qt.Key_Down:
              if shift:
@@ -1382,10 +1382,10 @@ index 3b9ab1ce..7f9675e7 100644
 @@ -336,7 +331,7 @@ class Scene(TVTKScene, Widget):
          # The light manager needs creating.
          self.light_manager = None
-
+ 
 -        self._cursor = CursorShape.ArrowCursor
 +        self._cursor = QtCore.Qt.ArrowCursor
-
+ 
      def __get_pure_state__(self):
          """Allows us to pickle the scene."""
 @@ -369,7 +364,7 @@ class Scene(TVTKScene, Widget):
@@ -1394,7 +1394,7 @@ index 3b9ab1ce..7f9675e7 100644
          self._cursor = self._vtk_control.cursor().shape()
 -        self._vtk_control.setCursor(CursorShape.BlankCursor)
 +        self._vtk_control.setCursor(QtCore.Qt.BlankCursor)
-
+ 
      def show_cursor(self):
          """Show the cursor."""
 diff --git a/tvtk/_setup.py b/tvtk/setup.py
@@ -1407,10 +1407,10 @@ index 767ab638..0531134c 100755
 @@ -6,14 +6,10 @@
  import os
  import sys
-
+ 
 -from setuptools import Distribution
 -
-
+ 
  def can_compile_extensions():
 -    try:
 -        import numpy  # noqa
@@ -1431,8 +1431,8 @@ index 767ab638..0531134c 100755
          return False
      else:
          return result
-
-
+ 
+ 
 +def configuration(parent_package=None, top_path=None):
 +    from os.path import join
 +    from numpy.distutils.misc_util import Configuration
@@ -1498,14 +1498,14 @@ index cad4766b..628e4f04 100644
 -#include "numpy/ufuncobject.h"
 -
 -    /* NumPy API declarations from "numpy/__init__.pxd" */
--
+-    
  #ifdef _OPENMP
  #include <omp.h>
  #endif /* _OPENMP */
 @@ -958,268 +949,13 @@ static int __pyx_clineno = 0;
  static const char * __pyx_cfilenm= __FILE__;
  static const char *__pyx_filename;
-
+ 
 -/* Header.proto */
 -#if !defined(CYTHON_CCOMPLEX)
 -  #if defined(__cplusplus)
@@ -1528,17 +1528,17 @@ index cad4766b..628e4f04 100644
 -  #define _Complex_I 1.0fj
 -#endif
 -
-
+ 
  static const char *__pyx_f[] = {
 -  "array_ext.pyx",
 -  "__init__.pxd",
 -  "type.pxd",
 +  "tvtk/src/array_ext.pyx",
  };
-
+ 
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":680
 - * # in Cython to enable them only on the right systems.
-- *
+- * 
 - * ctypedef npy_int8       int8_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_int16      int16_t
 - * ctypedef npy_int32      int32_t
@@ -1546,7 +1546,7 @@ index cad4766b..628e4f04 100644
 -typedef npy_int8 __pyx_t_5numpy_int8_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":681
-- *
+- * 
 - * ctypedef npy_int8       int8_t
 - * ctypedef npy_int16      int16_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_int32      int32_t
@@ -1574,7 +1574,7 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":687
 - * #ctypedef npy_int128     int128_t
-- *
+- * 
 - * ctypedef npy_uint8      uint8_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_uint16     uint16_t
 - * ctypedef npy_uint32     uint32_t
@@ -1582,7 +1582,7 @@ index cad4766b..628e4f04 100644
 -typedef npy_uint8 __pyx_t_5numpy_uint8_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":688
-- *
+- * 
 - * ctypedef npy_uint8      uint8_t
 - * ctypedef npy_uint16     uint16_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_uint32     uint32_t
@@ -1610,7 +1610,7 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":694
 - * #ctypedef npy_uint128    uint128_t
-- *
+- * 
 - * ctypedef npy_float32    float32_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_float64    float64_t
 - * #ctypedef npy_float80    float80_t
@@ -1618,7 +1618,7 @@ index cad4766b..628e4f04 100644
 -typedef npy_float32 __pyx_t_5numpy_float32_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":695
-- *
+- * 
 - * ctypedef npy_float32    float32_t
 - * ctypedef npy_float64    float64_t             # <<<<<<<<<<<<<<
 - * #ctypedef npy_float80    float80_t
@@ -1631,7 +1631,7 @@ index cad4766b..628e4f04 100644
 - * # numpy.int corresponds to 'l' and numpy.long to 'q'
 - * ctypedef npy_long       int_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_longlong   longlong_t
-- *
+- * 
 - */
 -typedef npy_long __pyx_t_5numpy_int_t;
 -
@@ -1639,50 +1639,50 @@ index cad4766b..628e4f04 100644
 - * # numpy.int corresponds to 'l' and numpy.long to 'q'
 - * ctypedef npy_long       int_t
 - * ctypedef npy_longlong   longlong_t             # <<<<<<<<<<<<<<
-- *
+- * 
 - * ctypedef npy_ulong      uint_t
 - */
 -typedef npy_longlong __pyx_t_5numpy_longlong_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":707
 - * ctypedef npy_longlong   longlong_t
-- *
+- * 
 - * ctypedef npy_ulong      uint_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_ulonglong  ulonglong_t
-- *
+- * 
 - */
 -typedef npy_ulong __pyx_t_5numpy_uint_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":708
-- *
+- * 
 - * ctypedef npy_ulong      uint_t
 - * ctypedef npy_ulonglong  ulonglong_t             # <<<<<<<<<<<<<<
-- *
+- * 
 - * ctypedef npy_intp       intp_t
 - */
 -typedef npy_ulonglong __pyx_t_5numpy_ulonglong_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":710
 - * ctypedef npy_ulonglong  ulonglong_t
-- *
+- * 
 - * ctypedef npy_intp       intp_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_uintp      uintp_t
-- *
+- * 
 - */
 -typedef npy_intp __pyx_t_5numpy_intp_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":711
-- *
+- * 
 - * ctypedef npy_intp       intp_t
 - * ctypedef npy_uintp      uintp_t             # <<<<<<<<<<<<<<
-- *
+- * 
 - * ctypedef npy_double     float_t
 - */
 -typedef npy_uintp __pyx_t_5numpy_uintp_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":713
 - * ctypedef npy_uintp      uintp_t
-- *
+- * 
 - * ctypedef npy_double     float_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_double     double_t
 - * ctypedef npy_longdouble longdouble_t
@@ -1690,11 +1690,11 @@ index cad4766b..628e4f04 100644
 -typedef npy_double __pyx_t_5numpy_float_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":714
-- *
+- * 
 - * ctypedef npy_double     float_t
 - * ctypedef npy_double     double_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_longdouble longdouble_t
-- *
+- * 
 - */
 -typedef npy_double __pyx_t_5numpy_double_t;
 -
@@ -1702,7 +1702,7 @@ index cad4766b..628e4f04 100644
 - * ctypedef npy_double     float_t
 - * ctypedef npy_double     double_t
 - * ctypedef npy_longdouble longdouble_t             # <<<<<<<<<<<<<<
-- *
+- * 
 - * ctypedef npy_cfloat      cfloat_t
 - */
 -typedef npy_longdouble __pyx_t_5numpy_longdouble_t;
@@ -1732,10 +1732,10 @@ index cad4766b..628e4f04 100644
 -
 -
  /*--- Type declarations ---*/
-
+ 
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":717
 - * ctypedef npy_longdouble longdouble_t
-- *
+- * 
 - * ctypedef npy_cfloat      cfloat_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_cdouble     cdouble_t
 - * ctypedef npy_clongdouble clongdouble_t
@@ -1743,11 +1743,11 @@ index cad4766b..628e4f04 100644
 -typedef npy_cfloat __pyx_t_5numpy_cfloat_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":718
-- *
+- * 
 - * ctypedef npy_cfloat      cfloat_t
 - * ctypedef npy_cdouble     cdouble_t             # <<<<<<<<<<<<<<
 - * ctypedef npy_clongdouble clongdouble_t
-- *
+- * 
 - */
 -typedef npy_cdouble __pyx_t_5numpy_cdouble_t;
 -
@@ -1755,16 +1755,16 @@ index cad4766b..628e4f04 100644
 - * ctypedef npy_cfloat      cfloat_t
 - * ctypedef npy_cdouble     cdouble_t
 - * ctypedef npy_clongdouble clongdouble_t             # <<<<<<<<<<<<<<
-- *
+- * 
 - * ctypedef npy_cdouble     complex_t
 - */
 -typedef npy_clongdouble __pyx_t_5numpy_clongdouble_t;
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":721
 - * ctypedef npy_clongdouble clongdouble_t
-- *
+- * 
 - * ctypedef npy_cdouble     complex_t             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew1(a):
 - */
 -typedef npy_cdouble __pyx_t_5numpy_complex_t;
@@ -1775,7 +1775,7 @@ index cad4766b..628e4f04 100644
 @@ -1505,43 +1241,6 @@ static CYTHON_INLINE void __Pyx_ErrFetchInState(PyThreadState *tstate, PyObject
  /* RaiseException.proto */
  static void __Pyx_Raise(PyObject *type, PyObject *value, PyObject *tb, PyObject *cause);
-
+ 
 -/* WriteUnraisableException.proto */
 -static void __Pyx_WriteUnraisable(const char *name, int clineno,
 -                                  int lineno, const char *filename,
@@ -1819,7 +1819,7 @@ index cad4766b..628e4f04 100644
 @@ -1584,104 +1283,6 @@ static void __Pyx_AddTraceback(const char *funcname, int c_line,
  #define __Pyx_HAS_GCC_DIAGNOSTIC
  #endif
-
+ 
 -/* RealImag.proto */
 -#if CYTHON_CCOMPLEX
 -  #ifdef __cplusplus
@@ -1920,11 +1920,11 @@ index cad4766b..628e4f04 100644
 -
  /* CIntToPy.proto */
  static CYTHON_INLINE PyObject* __Pyx_PyInt_From_long(long value);
-
+ 
 @@ -1711,44 +1312,7 @@ static int __Pyx_check_binary_version(void);
  static int __Pyx_InitStrings(__Pyx_StringTabEntry *t);
-
-
+ 
+ 
 -/* Module declarations from 'cpython.buffer' */
 -
 -/* Module declarations from 'libc.string' */
@@ -1963,11 +1963,11 @@ index cad4766b..628e4f04 100644
 -static PyTypeObject *__pyx_ptype_5numpy_character = 0;
 -static PyTypeObject *__pyx_ptype_5numpy_ufunc = 0;
 -static CYTHON_INLINE int __pyx_f_5numpy_import_array(void); /*proto*/
-
+ 
  /* Module declarations from 'array_ext' */
  static PyTypeObject *__pyx_ptype_9array_ext_ndarray = 0;
 @@ -1760,7 +1324,6 @@ int __pyx_module_is_main_array_ext = 0;
-
+ 
  /* Implementation of 'array_ext' */
  static PyObject *__pyx_builtin_ValueError;
 -static PyObject *__pyx_builtin_ImportError;
@@ -2033,34 +2033,34 @@ index cad4766b..628e4f04 100644
 -static PyObject *__pyx_codeobj__4;
 +static PyObject *__pyx_codeobj__2;
  /* Late includes */
-
+ 
 -/* "array_ext.pyx":44
 +/* "array_ext.pyx":46
   * ######################################################################
-  *
+  * 
   * cdef c_set_id_type_array(ndarray id_array, ndarray out_array):             # <<<<<<<<<<<<<<
 @@ -1869,7 +1426,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
    int __pyx_clineno = 0;
    __Pyx_RefNannySetupContext("c_set_id_type_array", 0);
-
+ 
 -  /* "array_ext.pyx":59
 +  /* "array_ext.pyx":61
   *     cdef int stride0, stride1
-  *
+  * 
   *     cell_length = id_array.dimensions[1];             # <<<<<<<<<<<<<<
 @@ -1878,7 +1435,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
   */
    __pyx_v_cell_length = (__pyx_v_id_array->dimensions[1]);
-
+ 
 -  /* "array_ext.pyx":60
 +  /* "array_ext.pyx":62
-  *
+  * 
   *     cell_length = id_array.dimensions[1];
   *     dim0 = id_array.dimensions[0]             # <<<<<<<<<<<<<<
 @@ -1887,7 +1444,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
   */
    __pyx_v_dim0 = (__pyx_v_id_array->dimensions[0]);
-
+ 
 -  /* "array_ext.pyx":61
 +  /* "array_ext.pyx":63
   *     cell_length = id_array.dimensions[1];
@@ -2069,7 +2069,7 @@ index cad4766b..628e4f04 100644
 @@ -1896,7 +1453,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
   */
    __pyx_v_id_data = ((int *)__pyx_v_id_array->data);
-
+ 
 -  /* "array_ext.pyx":62
 +  /* "array_ext.pyx":64
   *     dim0 = id_array.dimensions[0]
@@ -2078,7 +2078,7 @@ index cad4766b..628e4f04 100644
 @@ -1905,7 +1462,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
   */
    __pyx_v_out_data = ((int *)__pyx_v_out_array->data);
-
+ 
 -  /* "array_ext.pyx":63
 +  /* "array_ext.pyx":65
   *     id_data = <int*> id_array.data
@@ -2092,7 +2092,7 @@ index cad4766b..628e4f04 100644
 +    __PYX_ERR(0, 65, __pyx_L1_error)
    }
    __pyx_v_stride0 = ((__pyx_v_id_array->strides[0]) / __pyx_t_1);
-
+ 
 -  /* "array_ext.pyx":64
 +  /* "array_ext.pyx":66
   *     out_data = <int*> out_array.data
@@ -2106,16 +2106,16 @@ index cad4766b..628e4f04 100644
 +    __PYX_ERR(0, 66, __pyx_L1_error)
    }
    __pyx_v_stride1 = ((__pyx_v_id_array->strides[1]) / __pyx_t_1);
-
+ 
 -  /* "array_ext.pyx":67
 +  /* "array_ext.pyx":69
-  *
+  * 
   *     cdef int i, j, in_idx, out_idx
   *     for i from 0 <= i < dim0:             # <<<<<<<<<<<<<<
 @@ -1943,7 +1500,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
    __pyx_t_2 = __pyx_v_dim0;
    for (__pyx_v_i = 0; __pyx_v_i < __pyx_t_2; __pyx_v_i++) {
-
+ 
 -    /* "array_ext.pyx":68
 +    /* "array_ext.pyx":70
   *     cdef int i, j, in_idx, out_idx
@@ -2124,7 +2124,7 @@ index cad4766b..628e4f04 100644
 @@ -1952,7 +1509,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
   */
      __pyx_v_in_idx = (__pyx_v_i * __pyx_v_stride0);
-
+ 
 -    /* "array_ext.pyx":69
 +    /* "array_ext.pyx":71
   *     for i from 0 <= i < dim0:
@@ -2133,7 +2133,7 @@ index cad4766b..628e4f04 100644
 @@ -1961,7 +1518,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
   */
      __pyx_v_out_idx = ((__pyx_v_i * __pyx_v_cell_length) + __pyx_v_i);
-
+ 
 -    /* "array_ext.pyx":70
 +    /* "array_ext.pyx":72
   *         in_idx = i*stride0
@@ -2142,7 +2142,7 @@ index cad4766b..628e4f04 100644
 @@ -1970,7 +1527,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
   */
      (__pyx_v_out_data[__pyx_v_out_idx]) = __pyx_v_cell_length;
-
+ 
 -    /* "array_ext.pyx":71
 +    /* "array_ext.pyx":73
   *         out_idx = i*cell_length + i
@@ -2151,7 +2151,7 @@ index cad4766b..628e4f04 100644
 @@ -1980,7 +1537,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
      __pyx_t_3 = __pyx_v_cell_length;
      for (__pyx_v_j = 0; __pyx_v_j < __pyx_t_3; __pyx_v_j++) {
-
+ 
 -      /* "array_ext.pyx":72
 +      /* "array_ext.pyx":74
   *         out_data[out_idx] = cell_length
@@ -2160,43 +2160,43 @@ index cad4766b..628e4f04 100644
 @@ -1991,7 +1548,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
      }
    }
-
+ 
 -  /* "array_ext.pyx":44
 +  /* "array_ext.pyx":46
   * ######################################################################
-  *
+  * 
   * cdef c_set_id_type_array(ndarray id_array, ndarray out_array):             # <<<<<<<<<<<<<<
 @@ -2011,7 +1568,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array(PyArrayObject *__pyx_v_i
    return __pyx_r;
  }
-
+ 
 -/* "array_ext.pyx":74
 +/* "array_ext.pyx":76
   *             out_data[out_idx + j + 1] = id_data[in_idx + j*stride1]
-  *
+  * 
   * cdef c_set_id_type_array_long(ndarray id_array, ndarray out_array):             # <<<<<<<<<<<<<<
 @@ -2040,7 +1597,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
    int __pyx_clineno = 0;
    __Pyx_RefNannySetupContext("c_set_id_type_array_long", 0);
-
+ 
 -  /* "array_ext.pyx":88
 +  /* "array_ext.pyx":90
   *     cdef Py_ssize_t stride0, stride1
-  *
+  * 
   *     cell_length = id_array.dimensions[1];             # <<<<<<<<<<<<<<
 @@ -2049,7 +1606,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
   */
    __pyx_v_cell_length = (__pyx_v_id_array->dimensions[1]);
-
+ 
 -  /* "array_ext.pyx":89
 +  /* "array_ext.pyx":91
-  *
+  * 
   *     cell_length = id_array.dimensions[1];
   *     dim0 = id_array.dimensions[0]             # <<<<<<<<<<<<<<
 @@ -2058,7 +1615,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
   */
    __pyx_v_dim0 = (__pyx_v_id_array->dimensions[0]);
-
+ 
 -  /* "array_ext.pyx":90
 +  /* "array_ext.pyx":92
   *     cell_length = id_array.dimensions[1];
@@ -2205,7 +2205,7 @@ index cad4766b..628e4f04 100644
 @@ -2067,7 +1624,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
   */
    __pyx_v_id_data = ((Py_ssize_t *)__pyx_v_id_array->data);
-
+ 
 -  /* "array_ext.pyx":91
 +  /* "array_ext.pyx":93
   *     dim0 = id_array.dimensions[0]
@@ -2214,7 +2214,7 @@ index cad4766b..628e4f04 100644
 @@ -2076,7 +1633,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
   */
    __pyx_v_out_data = ((Py_ssize_t *)__pyx_v_out_array->data);
-
+ 
 -  /* "array_ext.pyx":92
 +  /* "array_ext.pyx":94
   *     id_data = <Py_ssize_t*> id_array.data
@@ -2228,7 +2228,7 @@ index cad4766b..628e4f04 100644
 +    __PYX_ERR(0, 94, __pyx_L1_error)
    }
    __pyx_v_stride0 = ((__pyx_v_id_array->strides[0]) / __pyx_t_1);
-
+ 
 -  /* "array_ext.pyx":93
 +  /* "array_ext.pyx":95
   *     out_data = <Py_ssize_t*> out_array.data
@@ -2242,16 +2242,16 @@ index cad4766b..628e4f04 100644
 +    __PYX_ERR(0, 95, __pyx_L1_error)
    }
    __pyx_v_stride1 = ((__pyx_v_id_array->strides[1]) / __pyx_t_1);
-
+ 
 -  /* "array_ext.pyx":96
 +  /* "array_ext.pyx":98
-  *
+  * 
   *     cdef int i, j, in_idx, out_idx
   *     for i from 0 <= i < dim0:             # <<<<<<<<<<<<<<
 @@ -2114,7 +1671,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
    __pyx_t_2 = __pyx_v_dim0;
    for (__pyx_v_i = 0; __pyx_v_i < __pyx_t_2; __pyx_v_i++) {
-
+ 
 -    /* "array_ext.pyx":97
 +    /* "array_ext.pyx":99
   *     cdef int i, j, in_idx, out_idx
@@ -2260,7 +2260,7 @@ index cad4766b..628e4f04 100644
 @@ -2123,7 +1680,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
   */
      __pyx_v_in_idx = (__pyx_v_i * __pyx_v_stride0);
-
+ 
 -    /* "array_ext.pyx":98
 +    /* "array_ext.pyx":100
   *     for i from 0 <= i < dim0:
@@ -2269,7 +2269,7 @@ index cad4766b..628e4f04 100644
 @@ -2132,7 +1689,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
   */
      __pyx_v_out_idx = ((__pyx_v_i * __pyx_v_cell_length) + __pyx_v_i);
-
+ 
 -    /* "array_ext.pyx":99
 +    /* "array_ext.pyx":101
   *         in_idx = i*stride0
@@ -2278,7 +2278,7 @@ index cad4766b..628e4f04 100644
 @@ -2141,7 +1698,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
   */
      (__pyx_v_out_data[__pyx_v_out_idx]) = __pyx_v_cell_length;
-
+ 
 -    /* "array_ext.pyx":100
 +    /* "array_ext.pyx":102
   *         out_idx = i*cell_length + i
@@ -2287,7 +2287,7 @@ index cad4766b..628e4f04 100644
 @@ -2151,7 +1708,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
      __pyx_t_3 = __pyx_v_cell_length;
      for (__pyx_v_j = 0; __pyx_v_j < __pyx_t_3; __pyx_v_j++) {
-
+ 
 -      /* "array_ext.pyx":101
 +      /* "array_ext.pyx":103
   *         out_data[out_idx] = cell_length
@@ -2296,20 +2296,20 @@ index cad4766b..628e4f04 100644
 @@ -2162,7 +1719,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
      }
    }
-
+ 
 -  /* "array_ext.pyx":74
 +  /* "array_ext.pyx":76
   *             out_data[out_idx + j + 1] = id_data[in_idx + j*stride1]
-  *
+  * 
   * cdef c_set_id_type_array_long(ndarray id_array, ndarray out_array):             # <<<<<<<<<<<<<<
 @@ -2182,7 +1739,7 @@ static PyObject *__pyx_f_9array_ext_c_set_id_type_array_long(PyArrayObject *__py
    return __pyx_r;
  }
-
+ 
 -/* "array_ext.pyx":107
 +/* "array_ext.pyx":109
   * ######################################################################
-  *
+  * 
   * def set_id_type_array(id_array, out_array):             # <<<<<<<<<<<<<<
 @@ -2226,11 +1783,11 @@ static PyObject *__pyx_pw_9array_ext_1set_id_type_array(PyObject *__pyx_self, Py
          case  1:
@@ -2353,7 +2353,7 @@ index cad4766b..628e4f04 100644
    const char *__pyx_filename = NULL;
    int __pyx_clineno = 0;
    __Pyx_RefNannySetupContext("set_id_type_array", 0);
-
+ 
 -  /* "array_ext.pyx":120
 +  /* "array_ext.pyx":122
   *     `id_array` need not be contiguous but `out_array` must be.
@@ -2367,7 +2367,7 @@ index cad4766b..628e4f04 100644
    __Pyx_GOTREF(__pyx_t_1);
    __pyx_v_vtk = __pyx_t_1;
    __pyx_t_1 = 0;
-
+ 
 -  /* "array_ext.pyx":121
 +  /* "array_ext.pyx":123
   *     """
@@ -2404,7 +2404,7 @@ index cad4766b..628e4f04 100644
    __Pyx_DECREF(__pyx_t_3); __pyx_t_3 = 0;
    __pyx_v_VTK_ID_TYPE_SIZE = __pyx_t_1;
    __pyx_t_1 = 0;
-
+ 
 -  /* "array_ext.pyx":122
 +  /* "array_ext.pyx":124
   *     import vtk
@@ -2503,13 +2503,13 @@ index cad4766b..628e4f04 100644
 +      __pyx_t_5 = __pyx_t_9;
        goto __pyx_L3_bool_binop_done;
      }
-
+ 
 -    /* "array_ext.pyx":123
 +    /* "array_ext.pyx":125
   *     VTK_ID_TYPE_SIZE = vtk.vtkIdTypeArray().GetDataTypeSize()
   *     assert numpy.issubdtype(id_array.dtype, numpy.signedinteger) and \
   *        id_array.dtype.itemsize == VTK_ID_TYPE_SIZE             # <<<<<<<<<<<<<<
-  *
+  * 
   *     assert out_array.flags.contiguous == 1, \
   */
 -    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_id_array, __pyx_n_s_dtype); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 123, __pyx_L1_error)
@@ -2535,11 +2535,11 @@ index cad4766b..628e4f04 100644
      }
    }
    #endif
-
+ 
 -  /* "array_ext.pyx":125
 +  /* "array_ext.pyx":127
   *        id_array.dtype.itemsize == VTK_ID_TYPE_SIZE
-  *
+  * 
   *     assert out_array.flags.contiguous == 1, \             # <<<<<<<<<<<<<<
 @@ -2441,36 +2006,36 @@ static PyObject *__pyx_pf_9array_ext_set_id_type_array(CYTHON_UNUSED PyObject *_
   */
@@ -2566,24 +2566,24 @@ index cad4766b..628e4f04 100644
      }
    }
    #endif
-
+ 
 -  /* "array_ext.pyx":128
 +  /* "array_ext.pyx":130
   *            "out_array must be contiguous."
-  *
+  * 
   *     shp = id_array.shape             # <<<<<<<<<<<<<<
   *     assert len(shp) == 2, "id_array must be a two dimensional array."
-  *
+  * 
   */
 -  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_id_array, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 128, __pyx_L1_error)
 +  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_v_id_array, __pyx_n_s_shape); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 130, __pyx_L1_error)
    __Pyx_GOTREF(__pyx_t_1);
    __pyx_v_shp = __pyx_t_1;
    __pyx_t_1 = 0;
-
+ 
 -  /* "array_ext.pyx":129
 +  /* "array_ext.pyx":131
-  *
+  * 
   *     shp = id_array.shape
   *     assert len(shp) == 2, "id_array must be a two dimensional array."             # <<<<<<<<<<<<<<
 @@ -2479,66 +2044,66 @@ static PyObject *__pyx_pf_9array_ext_set_id_type_array(CYTHON_UNUSED PyObject *_
@@ -2600,11 +2600,11 @@ index cad4766b..628e4f04 100644
      }
    }
    #endif
-
+ 
 -  /* "array_ext.pyx":131
 +  /* "array_ext.pyx":133
   *     assert len(shp) == 2, "id_array must be a two dimensional array."
-  *
+  * 
   *     sz = numpy.size(out_array)             # <<<<<<<<<<<<<<
   *     e_sz = shp[0]*(shp[1]+1)
   *     assert sz == e_sz, \
@@ -2641,10 +2641,10 @@ index cad4766b..628e4f04 100644
 +  __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
    __pyx_v_sz = __pyx_t_1;
    __pyx_t_1 = 0;
-
+ 
 -  /* "array_ext.pyx":132
 +  /* "array_ext.pyx":134
-  *
+  * 
   *     sz = numpy.size(out_array)
   *     e_sz = shp[0]*(shp[1]+1)             # <<<<<<<<<<<<<<
   *     assert sz == e_sz, \
@@ -2672,7 +2672,7 @@ index cad4766b..628e4f04 100644
 -  __pyx_t_7 = 0;
 +  __pyx_v_e_sz = __pyx_t_8;
 +  __pyx_t_8 = 0;
-
+ 
 -  /* "array_ext.pyx":133
 +  /* "array_ext.pyx":135
   *     sz = numpy.size(out_array)
@@ -2689,13 +2689,13 @@ index cad4766b..628e4f04 100644
 +    __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_8); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 135, __pyx_L1_error)
 +    __Pyx_DECREF(__pyx_t_8); __pyx_t_8 = 0;
      if (unlikely(!__pyx_t_5)) {
-
+ 
 -      /* "array_ext.pyx":134
 +      /* "array_ext.pyx":136
   *     e_sz = shp[0]*(shp[1]+1)
   *     assert sz == e_sz, \
   *            "out_array size is incorrect, expected: %s, given: %s"%(e_sz, sz)             # <<<<<<<<<<<<<<
-  *
+  * 
   *     if VTK_ID_TYPE_SIZE == 4:
   */
 -      __pyx_t_7 = PyTuple_New(4); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 134, __pyx_L1_error)
@@ -2752,11 +2752,11 @@ index cad4766b..628e4f04 100644
      }
    }
    #endif
-
+ 
 -  /* "array_ext.pyx":136
 +  /* "array_ext.pyx":138
   *            "out_array size is incorrect, expected: %s, given: %s"%(e_sz, sz)
-  *
+  * 
   *     if VTK_ID_TYPE_SIZE == 4:             # <<<<<<<<<<<<<<
   *         c_set_id_type_array(id_array, out_array)
   *     elif VTK_ID_TYPE_SIZE == 8:
@@ -2768,10 +2768,10 @@ index cad4766b..628e4f04 100644
 +  __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 138, __pyx_L1_error)
    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
    if (__pyx_t_5) {
-
+ 
 -    /* "array_ext.pyx":137
 +    /* "array_ext.pyx":139
-  *
+  * 
   *     if VTK_ID_TYPE_SIZE == 4:
   *         c_set_id_type_array(id_array, out_array)             # <<<<<<<<<<<<<<
   *     elif VTK_ID_TYPE_SIZE == 8:
@@ -2785,16 +2785,16 @@ index cad4766b..628e4f04 100644
 +    __pyx_t_2 = __pyx_f_9array_ext_c_set_id_type_array(((PyArrayObject *)__pyx_v_id_array), ((PyArrayObject *)__pyx_v_out_array)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 139, __pyx_L1_error)
      __Pyx_GOTREF(__pyx_t_2);
      __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-
+ 
 -    /* "array_ext.pyx":136
 +    /* "array_ext.pyx":138
   *            "out_array size is incorrect, expected: %s, given: %s"%(e_sz, sz)
-  *
+  * 
   *     if VTK_ID_TYPE_SIZE == 4:             # <<<<<<<<<<<<<<
 @@ -2631,1125 +2196,101 @@ static PyObject *__pyx_pf_9array_ext_set_id_type_array(CYTHON_UNUSED PyObject *_
      goto __pyx_L5;
    }
-
+ 
 -  /* "array_ext.pyx":138
 +  /* "array_ext.pyx":140
   *     if VTK_ID_TYPE_SIZE == 4:
@@ -2810,7 +2810,7 @@ index cad4766b..628e4f04 100644
 +  __pyx_t_5 = __Pyx_PyObject_IsTrue(__pyx_t_2); if (unlikely(__pyx_t_5 < 0)) __PYX_ERR(0, 140, __pyx_L1_error)
    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
    if (likely(__pyx_t_5)) {
-
+ 
 -    /* "array_ext.pyx":139
 +    /* "array_ext.pyx":141
   *         c_set_id_type_array(id_array, out_array)
@@ -2868,7 +2868,7 @@ index cad4766b..628e4f04 100644
 -
 -  /* "array_ext.pyx":107
 - * ######################################################################
-- *
+- * 
 - * def set_id_type_array(id_array, out_array):             # <<<<<<<<<<<<<<
 - *     """Given a 2D Int array (`id_array`), and a contiguous 1D numarray
 - *     array (`out_array`) having the correct size, this function sets
@@ -2898,10 +2898,10 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":723
 - * ctypedef npy_cdouble     complex_t
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(1, <void*>a)
-- *
+- * 
 - */
 -
 -static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew1(PyObject *__pyx_v_a) {
@@ -2914,10 +2914,10 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("PyArray_MultiIterNew1", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":724
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew1(a):
 - *     return PyArray_MultiIterNew(1, <void*>a)             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew2(a, b):
 - */
 -  __Pyx_XDECREF(__pyx_r);
@@ -2929,10 +2929,10 @@ index cad4766b..628e4f04 100644
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":723
 - * ctypedef npy_cdouble     complex_t
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew1(a):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(1, <void*>a)
-- *
+- * 
 - */
 -
 -  /* function exit code */
@@ -2948,10 +2948,10 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":726
 - *     return PyArray_MultiIterNew(1, <void*>a)
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
-- *
+- * 
 - */
 -
 -static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew2(PyObject *__pyx_v_a, PyObject *__pyx_v_b) {
@@ -2964,10 +2964,10 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("PyArray_MultiIterNew2", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":727
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew2(a, b):
 - *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew3(a, b, c):
 - */
 -  __Pyx_XDECREF(__pyx_r);
@@ -2979,10 +2979,10 @@ index cad4766b..628e4f04 100644
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":726
 - *     return PyArray_MultiIterNew(1, <void*>a)
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew2(a, b):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
-- *
+- * 
 - */
 -
 -  /* function exit code */
@@ -2998,10 +2998,10 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":729
 - *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
-- *
+- * 
 - */
 -
 -static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew3(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c) {
@@ -3014,10 +3014,10 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("PyArray_MultiIterNew3", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":730
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew3(a, b, c):
 - *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
 - */
 -  __Pyx_XDECREF(__pyx_r);
@@ -3029,10 +3029,10 @@ index cad4766b..628e4f04 100644
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":729
 - *     return PyArray_MultiIterNew(2, <void*>a, <void*>b)
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew3(a, b, c):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
-- *
+- * 
 - */
 -
 -  /* function exit code */
@@ -3048,10 +3048,10 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":732
 - *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
-- *
+- * 
 - */
 -
 -static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew4(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d) {
@@ -3064,10 +3064,10 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("PyArray_MultiIterNew4", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":733
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew4(a, b, c, d):
 - *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
 - */
 -  __Pyx_XDECREF(__pyx_r);
@@ -3079,10 +3079,10 @@ index cad4766b..628e4f04 100644
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":732
 - *     return PyArray_MultiIterNew(3, <void*>a, <void*>b, <void*> c)
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew4(a, b, c, d):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
-- *
+- * 
 - */
 -
 -  /* function exit code */
@@ -3098,10 +3098,10 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":735
 - *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
-- *
+- * 
 - */
 -
 -static CYTHON_INLINE PyObject *__pyx_f_5numpy_PyArray_MultiIterNew5(PyObject *__pyx_v_a, PyObject *__pyx_v_b, PyObject *__pyx_v_c, PyObject *__pyx_v_d, PyObject *__pyx_v_e) {
@@ -3114,10 +3114,10 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("PyArray_MultiIterNew5", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":736
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):
 - *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline tuple PyDataType_SHAPE(dtype d):
 - */
 -  __Pyx_XDECREF(__pyx_r);
@@ -3129,10 +3129,10 @@ index cad4766b..628e4f04 100644
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":735
 - *     return PyArray_MultiIterNew(4, <void*>a, <void*>b, <void*>c, <void*> d)
-- *
+- * 
 - * cdef inline object PyArray_MultiIterNew5(a, b, c, d, e):             # <<<<<<<<<<<<<<
 - *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
-- *
+- * 
 - */
 -
 -  /* function exit code */
@@ -3148,7 +3148,7 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":738
 - *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
-- *
+- * 
 - * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
 - *     if PyDataType_HASSUBARRAY(d):
 - *         return <tuple>d.subarray.shape
@@ -3161,7 +3161,7 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("PyDataType_SHAPE", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":739
-- *
+- * 
 - * cdef inline tuple PyDataType_SHAPE(dtype d):
 - *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
 - *         return <tuple>d.subarray.shape
@@ -3183,7 +3183,7 @@ index cad4766b..628e4f04 100644
 -    goto __pyx_L0;
 -
 -    /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":739
-- *
+- * 
 - * cdef inline tuple PyDataType_SHAPE(dtype d):
 - *     if PyDataType_HASSUBARRAY(d):             # <<<<<<<<<<<<<<
 - *         return <tuple>d.subarray.shape
@@ -3195,8 +3195,8 @@ index cad4766b..628e4f04 100644
 - *         return <tuple>d.subarray.shape
 - *     else:
 - *         return ()             # <<<<<<<<<<<<<<
-- *
-- *
+- * 
+- * 
 - */
 -  /*else*/ {
 -    __Pyx_XDECREF(__pyx_r);
@@ -3207,7 +3207,7 @@ index cad4766b..628e4f04 100644
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":738
 - *     return PyArray_MultiIterNew(5, <void*>a, <void*>b, <void*>c, <void*> d, <void*> e)
-- *
+- * 
 - * cdef inline tuple PyDataType_SHAPE(dtype d):             # <<<<<<<<<<<<<<
 - *     if PyDataType_HASSUBARRAY(d):
 - *         return <tuple>d.subarray.shape
@@ -3222,7 +3222,7 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":895
 - *     int _import_umath() except -1
-- *
+- * 
 - * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
 - *     Py_INCREF(base) # important to do this before stealing the reference below!
 - *     PyArray_SetBaseObject(arr, base)
@@ -3237,11 +3237,11 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("set_array_base", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":896
-- *
+- * 
 - * cdef inline void set_array_base(ndarray arr, object base):
 - *     Py_INCREF(base) # important to do this before stealing the reference below!             # <<<<<<<<<<<<<<
 - *     PyArray_SetBaseObject(arr, base)
-- *
+- * 
 - */
 -  Py_INCREF(__pyx_v_base);
 -
@@ -3249,14 +3249,14 @@ index cad4766b..628e4f04 100644
 - * cdef inline void set_array_base(ndarray arr, object base):
 - *     Py_INCREF(base) # important to do this before stealing the reference below!
 - *     PyArray_SetBaseObject(arr, base)             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline object get_array_base(ndarray arr):
 - */
 -  __pyx_t_1 = PyArray_SetBaseObject(__pyx_v_arr, __pyx_v_base); if (unlikely(__pyx_t_1 == ((int)-1))) __PYX_ERR(1, 897, __pyx_L1_error)
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":895
 - *     int _import_umath() except -1
-- *
+- * 
 - * cdef inline void set_array_base(ndarray arr, object base):             # <<<<<<<<<<<<<<
 - *     Py_INCREF(base) # important to do this before stealing the reference below!
 - *     PyArray_SetBaseObject(arr, base)
@@ -3272,7 +3272,7 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":899
 - *     PyArray_SetBaseObject(arr, base)
-- *
+- * 
 - * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
 - *     base = PyArray_BASE(arr)
 - *     if base is NULL:
@@ -3286,7 +3286,7 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("get_array_base", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":900
-- *
+- * 
 - * cdef inline object get_array_base(ndarray arr):
 - *     base = PyArray_BASE(arr)             # <<<<<<<<<<<<<<
 - *     if base is NULL:
@@ -3309,7 +3309,7 @@ index cad4766b..628e4f04 100644
 - *     if base is NULL:
 - *         return None             # <<<<<<<<<<<<<<
 - *     return <object>base
-- *
+- * 
 - */
 -    __Pyx_XDECREF(__pyx_r);
 -    __pyx_r = Py_None; __Pyx_INCREF(Py_None);
@@ -3328,7 +3328,7 @@ index cad4766b..628e4f04 100644
 - *     if base is NULL:
 - *         return None
 - *     return <object>base             # <<<<<<<<<<<<<<
-- *
+- * 
 - * # Versions of the import_* functions which are more suitable for
 - */
 -  __Pyx_XDECREF(__pyx_r);
@@ -3338,7 +3338,7 @@ index cad4766b..628e4f04 100644
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":899
 - *     PyArray_SetBaseObject(arr, base)
-- *
+- * 
 - * cdef inline object get_array_base(ndarray arr):             # <<<<<<<<<<<<<<
 - *     base = PyArray_BASE(arr)
 - *     if base is NULL:
@@ -3419,7 +3419,7 @@ index cad4766b..628e4f04 100644
 - *         __pyx_import_array()
 - *     except Exception:             # <<<<<<<<<<<<<<
 - *         raise ImportError("numpy.core.multiarray failed to import")
-- *
+- * 
 - */
 -    __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
 -    if (__pyx_t_4) {
@@ -3433,7 +3433,7 @@ index cad4766b..628e4f04 100644
 - *         __pyx_import_array()
 - *     except Exception:
 - *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline int import_umath() except -1:
 - */
 -      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple_, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 911, __pyx_L5_except_error)
@@ -3485,7 +3485,7 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":913
 - *         raise ImportError("numpy.core.multiarray failed to import")
-- *
+- * 
 - * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
 - *     try:
 - *         _import_umath()
@@ -3508,7 +3508,7 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("import_umath", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":914
-- *
+- * 
 - * cdef inline int import_umath() except -1:
 - *     try:             # <<<<<<<<<<<<<<
 - *         _import_umath()
@@ -3533,7 +3533,7 @@ index cad4766b..628e4f04 100644
 -      __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 915, __pyx_L3_error)
 -
 -      /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":914
-- *
+- * 
 - * cdef inline int import_umath() except -1:
 - *     try:             # <<<<<<<<<<<<<<
 - *         _import_umath()
@@ -3551,7 +3551,7 @@ index cad4766b..628e4f04 100644
 - *         _import_umath()
 - *     except Exception:             # <<<<<<<<<<<<<<
 - *         raise ImportError("numpy.core.umath failed to import")
-- *
+- * 
 - */
 -    __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
 -    if (__pyx_t_4) {
@@ -3565,7 +3565,7 @@ index cad4766b..628e4f04 100644
 - *         _import_umath()
 - *     except Exception:
 - *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline int import_ufunc() except -1:
 - */
 -      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 917, __pyx_L5_except_error)
@@ -3578,7 +3578,7 @@ index cad4766b..628e4f04 100644
 -    __pyx_L5_except_error:;
 -
 -    /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":914
-- *
+- * 
 - * cdef inline int import_umath() except -1:
 - *     try:             # <<<<<<<<<<<<<<
 - *         _import_umath()
@@ -3594,7 +3594,7 @@ index cad4766b..628e4f04 100644
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":913
 - *         raise ImportError("numpy.core.multiarray failed to import")
-- *
+- * 
 - * cdef inline int import_umath() except -1:             # <<<<<<<<<<<<<<
 - *     try:
 - *         _import_umath()
@@ -3617,7 +3617,7 @@ index cad4766b..628e4f04 100644
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":919
 - *         raise ImportError("numpy.core.umath failed to import")
-- *
+- * 
 - * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
 - *     try:
 - *         _import_umath()
@@ -3640,7 +3640,7 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannySetupContext("import_ufunc", 0);
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":920
-- *
+- * 
 - * cdef inline int import_ufunc() except -1:
 - *     try:             # <<<<<<<<<<<<<<
 - *         _import_umath()
@@ -3665,7 +3665,7 @@ index cad4766b..628e4f04 100644
 -      __pyx_t_4 = _import_umath(); if (unlikely(__pyx_t_4 == ((int)-1))) __PYX_ERR(1, 921, __pyx_L3_error)
 -
 -      /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":920
-- *
+- * 
 - * cdef inline int import_ufunc() except -1:
 - *     try:             # <<<<<<<<<<<<<<
 - *         _import_umath()
@@ -3683,7 +3683,7 @@ index cad4766b..628e4f04 100644
 - *         _import_umath()
 - *     except Exception:             # <<<<<<<<<<<<<<
 - *         raise ImportError("numpy.core.umath failed to import")
-- *
+- * 
 - */
 -    __pyx_t_4 = __Pyx_PyErr_ExceptionMatches(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])));
 -    if (__pyx_t_4) {
@@ -3697,7 +3697,7 @@ index cad4766b..628e4f04 100644
 - *         _import_umath()
 - *     except Exception:
 - *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef extern from *:
 - */
 -      __pyx_t_8 = __Pyx_PyObject_Call(__pyx_builtin_ImportError, __pyx_tuple__2, NULL); if (unlikely(!__pyx_t_8)) __PYX_ERR(1, 923, __pyx_L5_except_error)
@@ -3710,7 +3710,7 @@ index cad4766b..628e4f04 100644
 -    __pyx_L5_except_error:;
 -
 -    /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":920
-- *
+- * 
 - * cdef inline int import_ufunc() except -1:
 - *     try:             # <<<<<<<<<<<<<<
 - *         _import_umath()
@@ -3726,7 +3726,7 @@ index cad4766b..628e4f04 100644
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":919
 - *         raise ImportError("numpy.core.umath failed to import")
-- *
+- * 
 - * cdef inline int import_ufunc() except -1:             # <<<<<<<<<<<<<<
 - *     try:
 - *         _import_umath()
@@ -3748,8 +3748,8 @@ index cad4766b..628e4f04 100644
 -}
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":933
-- *
-- *
+- * 
+- * 
 - * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
 - *     """
 - *     Cython equivalent of `isinstance(obj, np.timedelta64)`
@@ -3764,15 +3764,15 @@ index cad4766b..628e4f04 100644
 - *     bool
 - *     """
 - *     return PyObject_TypeCheck(obj, &PyTimedeltaArrType_Type)             # <<<<<<<<<<<<<<
-- *
-- *
+- * 
+- * 
 - */
 -  __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyTimedeltaArrType_Type));
 -  goto __pyx_L0;
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":933
-- *
-- *
+- * 
+- * 
 - * cdef inline bint is_timedelta64_object(object obj):             # <<<<<<<<<<<<<<
 - *     """
 - *     Cython equivalent of `isinstance(obj, np.timedelta64)`
@@ -3785,8 +3785,8 @@ index cad4766b..628e4f04 100644
 -}
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":948
-- *
-- *
+- * 
+- * 
 - * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
 - *     """
 - *     Cython equivalent of `isinstance(obj, np.datetime64)`
@@ -3801,15 +3801,15 @@ index cad4766b..628e4f04 100644
 - *     bool
 - *     """
 - *     return PyObject_TypeCheck(obj, &PyDatetimeArrType_Type)             # <<<<<<<<<<<<<<
-- *
-- *
+- * 
+- * 
 - */
 -  __pyx_r = PyObject_TypeCheck(__pyx_v_obj, (&PyDatetimeArrType_Type));
 -  goto __pyx_L0;
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":948
-- *
-- *
+- * 
+- * 
 - * cdef inline bint is_datetime64_object(object obj):             # <<<<<<<<<<<<<<
 - *     """
 - *     Cython equivalent of `isinstance(obj, np.datetime64)`
@@ -3822,8 +3822,8 @@ index cad4766b..628e4f04 100644
 -}
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":963
-- *
-- *
+- * 
+- * 
 - * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
 - *     """
 - *     returns the int64 value underlying scalar numpy datetime64 object
@@ -3836,15 +3836,15 @@ index cad4766b..628e4f04 100644
 - *     also needed.  That can be found using `get_datetime64_unit`.
 - *     """
 - *     return (<PyDatetimeScalarObject*>obj).obval             # <<<<<<<<<<<<<<
-- *
-- *
+- * 
+- * 
 - */
 -  __pyx_r = ((PyDatetimeScalarObject *)__pyx_v_obj)->obval;
 -  goto __pyx_L0;
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":963
-- *
-- *
+- * 
+- * 
 - * cdef inline npy_datetime get_datetime64_value(object obj) nogil:             # <<<<<<<<<<<<<<
 - *     """
 - *     returns the int64 value underlying scalar numpy datetime64 object
@@ -3856,8 +3856,8 @@ index cad4766b..628e4f04 100644
 -}
 -
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":973
-- *
-- *
+- * 
+- * 
 - * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
 - *     """
 - *     returns the int64 value underlying scalar numpy timedelta64 object
@@ -3870,15 +3870,15 @@ index cad4766b..628e4f04 100644
 - *     returns the int64 value underlying scalar numpy timedelta64 object
 - *     """
 - *     return (<PyTimedeltaScalarObject*>obj).obval             # <<<<<<<<<<<<<<
-- *
-- *
+- * 
+- * 
 - */
 -  __pyx_r = ((PyTimedeltaScalarObject *)__pyx_v_obj)->obval;
 -  goto __pyx_L0;
 -
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":973
-- *
-- *
+- * 
+- * 
 - * cdef inline npy_timedelta get_timedelta64_value(object obj) nogil:             # <<<<<<<<<<<<<<
 - *     """
 - *     returns the int64 value underlying scalar numpy timedelta64 object
@@ -3891,7 +3891,7 @@ index cad4766b..628e4f04 100644
 +    __pyx_t_2 = __pyx_f_9array_ext_c_set_id_type_array_long(((PyArrayObject *)__pyx_v_id_array), ((PyArrayObject *)__pyx_v_out_array)); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 141, __pyx_L1_error)
 +    __Pyx_GOTREF(__pyx_t_2);
 +    __Pyx_DECREF(__pyx_t_2); __pyx_t_2 = 0;
-
+ 
 -  /* function exit code */
 -  __pyx_L0:;
 -  return __pyx_r;
@@ -3905,10 +3905,10 @@ index cad4766b..628e4f04 100644
 + */
 +    goto __pyx_L5;
 +  }
-
+ 
 -/* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":980
-- *
-- *
+- * 
+- * 
 - * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
 - *     """
 - *     returns the unit part of the dtype for a numpy datetime64 object.
@@ -3919,7 +3919,7 @@ index cad4766b..628e4f04 100644
 + *                          %VTK_ID_TYPE_SIZE)
   */
 +  /*else*/ {
-
+ 
 -static CYTHON_INLINE NPY_DATETIMEUNIT __pyx_f_5numpy_get_datetime64_unit(PyObject *__pyx_v_obj) {
 -  NPY_DATETIMEUNIT __pyx_r;
 +    /* "array_ext.pyx":144
@@ -3929,7 +3929,7 @@ index cad4766b..628e4f04 100644
 + */
 +    __pyx_t_2 = __Pyx_PyUnicode_FormatSafe(__pyx_kp_u_Unsupported_VTK_ID_TYPE_SIZE_d, __pyx_v_VTK_ID_TYPE_SIZE); if (unlikely(!__pyx_t_2)) __PYX_ERR(0, 144, __pyx_L1_error)
 +    __Pyx_GOTREF(__pyx_t_2);
-
+ 
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":984
 - *     returns the unit part of the dtype for a numpy datetime64 object.
 - *     """
@@ -3950,12 +3950,12 @@ index cad4766b..628e4f04 100644
 +    __PYX_ERR(0, 143, __pyx_L1_error)
 +  }
 +  __pyx_L5:;
-
+ 
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":980
-- *
+- * 
 +  /* "array_ext.pyx":109
 + * ######################################################################
-  *
+  * 
 - * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
 - *     """
 - *     returns the unit part of the dtype for a numpy datetime64 object.
@@ -3963,7 +3963,7 @@ index cad4766b..628e4f04 100644
 + *     """Given a 2D Int array (`id_array`), and a contiguous 1D numarray
 + *     array (`out_array`) having the correct size, this function sets
   */
-
+ 
    /* function exit code */
 +  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
 +  goto __pyx_L0;
@@ -3986,9 +3986,9 @@ index cad4766b..628e4f04 100644
 +  __Pyx_RefNannyFinishContext();
    return __pyx_r;
  }
-
+ 
 @@ -3800,12 +2341,10 @@ static struct PyModuleDef __pyx_moduledef = {
-
+ 
  static __Pyx_StringTabEntry __pyx_string_tab[] = {
    {&__pyx_n_s_GetDataTypeSize, __pyx_k_GetDataTypeSize, sizeof(__pyx_k_GetDataTypeSize), 0, 0, 1, 1},
 -  {&__pyx_n_s_ImportError, __pyx_k_ImportError, sizeof(__pyx_k_ImportError), 0, 0, 1, 1},
@@ -4031,12 +4031,12 @@ index cad4766b..628e4f04 100644
 @@ -3847,39 +2385,17 @@ static CYTHON_SMALL_CODE int __Pyx_InitCachedConstants(void) {
    __Pyx_RefNannyDeclarations
    __Pyx_RefNannySetupContext("__Pyx_InitCachedConstants", 0);
-
+ 
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":911
 - *         __pyx_import_array()
 - *     except Exception:
 - *         raise ImportError("numpy.core.multiarray failed to import")             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline int import_umath() except -1:
 - */
 -  __pyx_tuple_ = PyTuple_Pack(1, __pyx_kp_u_numpy_core_multiarray_failed_to); if (unlikely(!__pyx_tuple_)) __PYX_ERR(1, 911, __pyx_L1_error)
@@ -4047,7 +4047,7 @@ index cad4766b..628e4f04 100644
 - *         _import_umath()
 - *     except Exception:
 - *         raise ImportError("numpy.core.umath failed to import")             # <<<<<<<<<<<<<<
-- *
+- * 
 - * cdef inline int import_ufunc() except -1:
 - */
 -  __pyx_tuple__2 = PyTuple_Pack(1, __pyx_kp_u_numpy_core_umath_failed_to_impor); if (unlikely(!__pyx_tuple__2)) __PYX_ERR(1, 917, __pyx_L1_error)
@@ -4057,7 +4057,7 @@ index cad4766b..628e4f04 100644
 -  /* "array_ext.pyx":107
 +  /* "array_ext.pyx":109
   * ######################################################################
-  *
+  * 
   * def set_id_type_array(id_array, out_array):             # <<<<<<<<<<<<<<
   *     """Given a 2D Int array (`id_array`), and a contiguous 1D numarray
   *     array (`out_array`) having the correct size, this function sets
@@ -4074,7 +4074,7 @@ index cad4766b..628e4f04 100644
    return 0;
    __pyx_L1_error:;
 @@ -3952,62 +2468,10 @@ static int __Pyx_modinit_type_init_code(void) {
-
+ 
  static int __Pyx_modinit_type_import_code(void) {
    __Pyx_RefNannyDeclarations
 -  PyObject *__pyx_t_1 = NULL;
@@ -4085,7 +4085,7 @@ index cad4766b..628e4f04 100644
    /*--- Type import code ---*/
 -  __pyx_t_1 = PyImport_ImportModule(__Pyx_BUILTIN_MODULE_NAME); if (unlikely(!__pyx_t_1)) __PYX_ERR(2, 9, __pyx_L1_error)
 -  __Pyx_GOTREF(__pyx_t_1);
--  __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__pyx_t_1, __Pyx_BUILTIN_MODULE_NAME, "type",
+-  __pyx_ptype_7cpython_4type_type = __Pyx_ImportType(__pyx_t_1, __Pyx_BUILTIN_MODULE_NAME, "type", 
 -  #if defined(PYPY_VERSION_NUM) && PYPY_VERSION_NUM < 0x050B0000
 -  sizeof(PyTypeObject),
 -  #else
@@ -4134,7 +4134,7 @@ index cad4766b..628e4f04 100644
 -  __Pyx_RefNannyFinishContext();
 -  return -1;
  }
-
+ 
  static int __Pyx_modinit_variable_import_code(void) {
 @@ -4121,7 +2585,6 @@ static CYTHON_SMALL_CODE int __pyx_pymod_exec_array_ext(PyObject *__pyx_pyinit_m
  #endif
@@ -4156,15 +4156,15 @@ index cad4766b..628e4f04 100644
 @@ -4227,37 +2690,37 @@ if (!__Pyx_RefNanny) {
    if (__Pyx_patch_abc() < 0) __PYX_ERR(0, 1, __pyx_L1_error)
    #endif
-
+ 
 -  /* "array_ext.pyx":14
 - * # License: BSD Style.
 +  /* "array_ext.pyx":15
-+ *
-  *
++ * 
+  * 
   * import numpy             # <<<<<<<<<<<<<<
 - * cimport numpy
-  *
+  * 
 + * ######################################################################
   */
 -  __pyx_t_1 = __Pyx_Import(__pyx_n_s_numpy, 0, 0); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 14, __pyx_L1_error)
@@ -4173,24 +4173,24 @@ index cad4766b..628e4f04 100644
 -  if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) __PYX_ERR(0, 14, __pyx_L1_error)
 +  if (PyDict_SetItem(__pyx_d, __pyx_n_s_numpy, __pyx_t_1) < 0) __PYX_ERR(0, 15, __pyx_L1_error)
    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
+ 
 -  /* "array_ext.pyx":38
 - *         cdef int flags
 +  /* "array_ext.pyx":40
 + *     void import_array()
-  *
+  * 
 - * numpy.import_array()             # <<<<<<<<<<<<<<
 + * import_array()             # <<<<<<<<<<<<<<
-  *
+  * 
   * ######################################################################
   */
 -  __pyx_t_2 = __pyx_f_5numpy_import_array(); if (unlikely(__pyx_t_2 == ((int)-1))) __PYX_ERR(0, 38, __pyx_L1_error)
 +  import_array();
-
+ 
 -  /* "array_ext.pyx":107
 +  /* "array_ext.pyx":109
   * ######################################################################
-  *
+  * 
   * def set_id_type_array(id_array, out_array):             # <<<<<<<<<<<<<<
   *     """Given a 2D Int array (`id_array`), and a contiguous 1D numarray
   *     array (`out_array`) having the correct size, this function sets
@@ -4201,27 +4201,27 @@ index cad4766b..628e4f04 100644
 -  if (PyDict_SetItem(__pyx_d, __pyx_n_s_set_id_type_array, __pyx_t_1) < 0) __PYX_ERR(0, 107, __pyx_L1_error)
 +  if (PyDict_SetItem(__pyx_d, __pyx_n_s_set_id_type_array, __pyx_t_1) < 0) __PYX_ERR(0, 109, __pyx_L1_error)
    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
+ 
    /* "array_ext.pyx":1
 @@ -4270,14 +2733,6 @@ if (!__Pyx_RefNanny) {
    if (PyDict_SetItem(__pyx_d, __pyx_n_s_test, __pyx_t_1) < 0) __PYX_ERR(0, 1, __pyx_L1_error)
    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-
+ 
 -  /* "../../../virtualenvs/base/lib/python3.11/site-packages/numpy/__init__.pxd":980
-- *
-- *
+- * 
+- * 
 - * cdef inline NPY_DATETIMEUNIT get_datetime64_unit(object obj) nogil:             # <<<<<<<<<<<<<<
 - *     """
 - *     returns the unit part of the dtype for a numpy datetime64 object.
 - */
 -
    /*--- Wrapped vars code ---*/
-
+ 
    goto __pyx_L0;
 @@ -5444,203 +3899,6 @@ bad:
  }
  #endif
-
+ 
 -/* WriteUnraisableException */
 -static void __Pyx_WriteUnraisable(const char *name, CYTHON_UNUSED int clineno,
 -                                  CYTHON_UNUSED int lineno, CYTHON_UNUSED const char *filename,
@@ -4425,7 +4425,7 @@ index cad4766b..628e4f04 100644
 @@ -5931,314 +4189,6 @@ bad:
      Py_XDECREF(py_frame);
  }
-
+ 
 -/* Declarations */
 -#if CYTHON_CCOMPLEX
 -  #ifdef __cplusplus
@@ -4743,21 +4743,21 @@ index 380459de..bb2e3e73 100644
 +++ b/tvtk/src/array_ext.pyx
 @@ -12,7 +12,6 @@ allows us to massage a 2D scipy array into a form usable as a
  # License: BSD Style.
-
+ 
  import numpy
 -cimport numpy
-
+ 
  ######################################################################
  # External declarations.
 @@ -35,7 +34,9 @@ cdef extern from "numpy/arrayobject.h":
          cdef PyArray_Descr *descr
          cdef int flags
-
+ 
 -numpy.import_array()
 +    void import_array()
 +
 +import_array()
-
+ 
  ######################################################################
  # Internal C functions.
 diff --git a/tvtk/tests/test_ctf_util.py b/tvtk/tests/test_ctf_util.py
@@ -4766,21 +4766,21 @@ index d02b03be..ad65168c 100644
 +++ b/tvtk/tests/test_ctf_util.py
 @@ -1,6 +1,5 @@
  """Simple tests for the color transfer function utilities in tvtk."""
-
+ 
 -import pytest
  import unittest
-
+ 
  from tvtk.util.ctf import (load_ctfs, save_ctfs, \
 @@ -58,7 +57,6 @@ class TestCTFUtil(unittest.TestCase):
          # check that both the data are identical.
          self.assertEqual(mdata, data)
-
+ 
 -    @pytest.mark.xfail(reason="Failing on osmesa / headless tests")
      def test_rescale_ctf(self):
          """Test rescaling a CTF."""
          # Expected data.
 @@ -73,3 +71,4 @@ class TestCTFUtil(unittest.TestCase):
-
+ 
  if __name__ == '__main__':
      unittest.main()
 +
@@ -4793,7 +4793,7 @@ index 3cba92c5..fe496a2c 100644
  import re
  import numpy
 -from textwrap import indent
-
+ 
  from tvtk import tvtk_base
  from tvtk.common import get_tvtk_name, configure_input_data
 @@ -155,8 +154,6 @@ class TestTVTK(unittest.TestCase):
@@ -4853,7 +4853,7 @@ index c97635f5..ceab86b7 100644
              res['SelectionPointSize'] = (2.0, None)
 -        if (vtk_major_version, vtk_minor_version) >= (9, 3):
 -            res['EdgeOpacity'] = (1.0, None)
-
+ 
          result = list(p.get_get_set_methods().keys())
          if hasattr(obj, 'GetTexture'):
 diff --git a/tvtk/tools/tvtk_doc.py b/tvtk/tools/tvtk_doc.py
@@ -4867,7 +4867,7 @@ index 78569765..95cb72da 100644
 -    if (ver.GetVTKMajorVersion(), ver.GetVTKMinorVersion()) >= (9, 2):
 +    if (ver.GetVTKMajorVersion(), ver.GetVTKMinorVersion()) == (9, 2):
          bad_names.append('vtkOpenGLAvatar')
-
+ 
      for name in dir(vtk):
 diff --git a/tvtk/version.py b/tvtk/version.py
 index 7c8b9beb..37ecf57c 100644
@@ -4912,7 +4912,7 @@ index 031af8f3..fbbb394b 100644
 @@ -714,20 +714,6 @@ class VTKMethodParser:
                          except TypeError:
                              default = None
-
+ 
 -                    # If we don't turn these into integers, they won't instantiate
 -                    if is_version_9():
 -                        if klass_name == "vtkAxisActor":
@@ -4937,22 +4937,22 @@ index 12606e1a..76a8849a 100644
 @@ -6,7 +6,6 @@ VTK classes.
  # Copyright (c) 2004-2020, Enthought, Inc.
  # License: BSD Style.
-
+ 
 -import faulthandler
  import re
  import sys
  import vtk
 @@ -17,13 +16,18 @@ from itertools import chain
-
+ 
  # Local imports (these are relative imports because the package is not
  # installed when these modules are imported).
 -from .common import get_tvtk_name, camel2enthought, vtk_major_version, _sanitize_name
 +from .common import get_tvtk_name, camel2enthought, vtk_major_version
-
+ 
  from . import vtk_parser
  from . import indenter
  from . import special_gen
-
+ 
 -faulthandler.enable()
 +try:
 +    import faulthandler
@@ -4960,8 +4960,8 @@ index 12606e1a..76a8849a 100644
 +    pass
 +else:
 +    faulthandler.enable()
-
-
+ 
+ 
  def get_trait_def(value, **kwargs):
 @@ -766,10 +770,7 @@ class WrapperGenerator:
              # --------------------------------------------------------
@@ -4974,11 +4974,11 @@ index 12606e1a..76a8849a 100644
 +            if rng:
                  self._write_trait_with_range(klass, out, vtk_attr_name)
                  continue
-
+ 
 @@ -944,7 +945,6 @@ class WrapperGenerator:
              # are usually special methods.
              return name
-
+ 
 -        name = _sanitize_name(name)
          res = camel2enthought(name)
          if keyword.iskeyword(res):
