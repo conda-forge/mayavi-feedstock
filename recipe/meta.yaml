@@ -16,8 +16,9 @@ source:
     # https://github.com/enthought/mayavi/pull/1255
     - traitsui-8.patch
     # https://github.com/enthought/mayavi/pull/1281
-    - python312.patch
-    - include_dirs.patch
+    - gh1281.patch
+    # https://github.com/enthought/mayavi/pull/1291
+    - gh1291.patch
 
 build:
   number: 8
