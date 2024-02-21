@@ -8,6 +8,7 @@ if [ "$unamestr" != 'Darwin' ]; then
 	export DISPLAY=:1
 fi
 
+$PYTHON -c "import numpy; print(numpy.__version__)"
 $PYTHON -um pip install . --no-deps -vv
 
 if [ "$unamestr" != 'Darwin' ]; then
