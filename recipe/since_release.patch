@@ -565,6 +565,28 @@ index d46357c7..7b01dee6 100644
          aa = c.children[0].children[0]
          self.assertEqual(aa.point_scalars_name,'pressure')
          sc = get_output(aa.outputs[0]).point_data.scalars
+diff --git a/mayavi/tools/figure.py b/mayavi/tools/figure.py
+index a89bd983..a196f1fd 100644
+--- a/mayavi/tools/figure.py
++++ b/mayavi/tools/figure.py
+@@ -69,7 +69,7 @@ def figure(figure=None, bgcolor=None, fgcolor=None, engine=None,
+             engine.new_scene(name=name, size=size)
+             engine.current_scene.name = name
+         else:
+-            if type(figure) in (int, np.int0, np.int8,
++            if type(figure) in (int, np.intp, np.int8,
+                                 np.int16, np.int32, np.int64):
+                 name = int(figure)
+                 __scene_number_list.update((name,))
+@@ -165,7 +165,7 @@ def close(scene=None, all=False):
+         if scene is None:
+             scene = engine.current_scene
+         else:
+-            if type(scene) in (int, np.int0, np.int8,
++            if type(scene) in (int, np.intp, np.int8,
+                                np.int16, np.int32, np.int64):
+                 scene = int(scene)
+                 name = 'Mayavi Scene %d' % scene
 diff --git a/mayavi/version.py b/mayavi/version.py
 index 37ecf57c..688314ff 100644
 --- a/mayavi/version.py
@@ -14864,7 +14886,7 @@ index db4eb39a..69dad0eb 100644
 +        pass
 \ No newline at end of file
 diff --git a/tvtk/vtk_parser.py b/tvtk/vtk_parser.py
-index 19075858..031af8f3 100644
+index 19075858..39efd9bc 100644
 --- a/tvtk/vtk_parser.py
 +++ b/tvtk/vtk_parser.py
 @@ -702,6 +702,8 @@ class VTKMethodParser:
@@ -14876,7 +14898,7 @@ index 19075858..031af8f3 100644
                              False):  # just to simplify indentation/updates
                          default = None
                      else:
-@@ -712,6 +714,20 @@ class VTKMethodParser:
+@@ -712,6 +714,23 @@ class VTKMethodParser:
                          except TypeError:
                              default = None
  
@@ -14893,12 +14915,15 @@ index 19075858..031af8f3 100644
 +                                "UseAxisOrigin", "UseOrientedBounds", "UseTextActor3D",
 +                            ):
 +                                default = int(bool(default))
++                        elif klass_name == "vtkCylinderSource":
++                            if key == "LatLongTesselation":
++                                default = int(bool(default))
 +
                      if value:
                          low = getattr(obj, 'Get%sMinValue' % key)()
                          high = getattr(obj, 'Get%sMaxValue' % key)()
 diff --git a/tvtk/wrapper_gen.py b/tvtk/wrapper_gen.py
-index 76a8849a..12606e1a 100644
+index 76a8849a..95b9810e 100644
 --- a/tvtk/wrapper_gen.py
 +++ b/tvtk/wrapper_gen.py
 @@ -6,6 +6,7 @@ VTK classes.
@@ -14959,3 +14984,34 @@ index 76a8849a..12606e1a 100644
          indent = self.indent
          getter = '_get_%s'%t_name
          vtk_get_name = vtk_get_meth.__name__
+@@ -1648,6 +1650,11 @@ class WrapperGenerator:
+         'vtkLineIntegralConvolution2D.MaxNoiseValue$': (
+             True, True, '_write_line_integral_conv_2d_max_noise_value'
+         ),
++        # In VTK 9.3, vtkCylinderSource's GetLatLongTesselation gives random values
++        # https://gitlab.kitware.com/vtk/vtk/-/issues/19252
++        'vtkCylinderSource.LatLongTessellation$': (
++            True, True, '_write_cylinder_source_lat_long_tessellation'
++        ),
+     }
+ 
+     @classmethod
+@@ -1915,3 +1922,18 @@ class WrapperGenerator:
+         name = self._reform_name(vtk_attr_name)
+         vtk_set_meth = getattr(klass, 'Set' + vtk_attr_name)
+         self._write_trait(out, name, t_def, vtk_set_meth, mapped=False)
++
++    def _write_cylinder_source_lat_long_tessellation(
++        self, klass, out, vtk_attr_name
++    ):
++        if vtk_attr_name != 'LatLongTessellation':
++            raise RuntimeError(f"Wrong attribute name: {vtk_attr_name}")
++        if vtk_major_version >= 9:
++            message = ("vtkCylinderSource: "
++                       "LatLongTesselation not updatable "
++                       "(VTK 9.3 bug - value not properly initialized)")
++            print(message)
++        t_def = 'tvtk_base.false_bool_trait'
++        name = self._reform_name(vtk_attr_name)
++        vtk_set_meth = getattr(klass, 'Set' + vtk_attr_name)
++        self._write_trait(out, name, t_def, vtk_set_meth, mapped=True)
