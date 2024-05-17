@@ -15,7 +15,7 @@ source:
     - since_release.patch
 
 build:
-  number: 8
+  number: 9
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
@@ -23,6 +23,7 @@ build:
 requirements:
   build:
     - {{ compiler('c') }}
+    - {{ stdlib("c") }}
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
     - python                                 # [build_platform != target_platform]
     - numpy                                  # [build_platform != target_platform]
@@ -40,7 +41,6 @@ requirements:
     - apptools
   run:
     - python
-    - {{ pin_compatible('numpy') }}
     - vtk
     - traitsui
     - pyface
