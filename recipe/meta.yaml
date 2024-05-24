@@ -1,4 +1,4 @@
-{% set version = "4.8.1" %}
+{% set version = "4.8.2" %}
 
 package:
   name: mayavi
@@ -7,7 +7,7 @@ package:
 source:
   fn: mayavi-{{ version }}.tar.gz
   url: https://github.com/enthought/mayavi/archive/{{ version }}.tar.gz
-  sha256: 903dc4fe340ddfbb5245b3da92d244912b36f2043aaeea938788689fb965cb1c
+  sha256: a78eb7512948d9484c0ba7b1fdeab088f9f4a32ca32862a0b8e8d2b63ad83eb2
   patches:
     # Waiting for a release so we can drop this patch, generated in the mayavi source dir with:
     # git diff 4.8.1 origin/include -- . ':(exclude)*.yml' > ../mayavi-feedstock/recipe/since_release.patch
@@ -15,7 +15,7 @@ source:
     - since_release.patch
 
 build:
-  number: 8
+  number: 0
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
@@ -23,6 +23,7 @@ build:
 requirements:
   build:
     - {{ compiler('c') }}
+    - {{ stdlib("c") }}
     - cross-python_{{ target_platform }}     # [build_platform != target_platform]
     - python                                 # [build_platform != target_platform]
     - numpy                                  # [build_platform != target_platform]
