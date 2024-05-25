@@ -8,15 +8,15 @@ source:
   fn: mayavi-{{ version }}.tar.gz
   url: https://github.com/enthought/mayavi/archive/{{ version }}.tar.gz
   sha256: a78eb7512948d9484c0ba7b1fdeab088f9f4a32ca32862a0b8e8d2b63ad83eb2
+  patches:
+    # Using Cython 3.0.10 and NumPy 2.0 installed rather than Cython 3.0.8
+    - cython.patch
 
 build:
   number: 1
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
-  patches:
-    # Using Cython 3.0.10 and NumPy 2.0 installed rather than Cython 3.0.8
-    - cython.patch
 
 requirements:
   build:
