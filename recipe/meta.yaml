@@ -14,6 +14,9 @@ build:
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
+  patches:
+    # Using Cython 3.0.10 and NumPy 2.0 installed rather than Cython 3.0.8
+    - cython.patch
 
 requirements:
   build:
