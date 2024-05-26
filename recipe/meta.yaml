@@ -17,9 +17,9 @@ build:
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
-   # C99 issue on macOS, see failures in
-   # https://github.com/conda-forge/mayavi-feedstock/pull/80
-   skip: True  # [py<3.9 and osx]
+  # C99 issue on macOS, see failures in
+  # https://github.com/conda-forge/mayavi-feedstock/pull/80
+  skip: True  # [py<3.9 and osx]
 
 requirements:
   build:
