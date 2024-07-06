@@ -30,14 +30,14 @@ requirements:
     - numpy                                  # [build_platform != target_platform]
     - cython                                 # [build_platform != target_platform]
     - vtk                                    # [build_platform != target_platform]
-    - qt-main                                # [build_platform != target_platform]
+    - qt6-main                                # [build_platform != target_platform]
   host:
     - python
     - pip
     - cython
     - numpy
     - vtk
-    - qt-main
+    - qt6-main
     - traitsui
     - apptools
   run:
@@ -47,7 +47,6 @@ requirements:
     - pyface
     - apptools
     - envisage
-    - pyqt >=4,<6
     - setuptools
 
 test:
