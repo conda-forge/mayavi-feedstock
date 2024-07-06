@@ -13,7 +13,7 @@ source:
     - cython.patch
 
 build:
-  number: 2
+  number: 3
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
@@ -47,10 +47,11 @@ requirements:
     - pyface
     - apptools
     - envisage
-    - pyqt >=4,<6
     - setuptools
 
 test:
+  requires:
+    - pyqt
   commands:
     - mayavi2 --help
   imports:
