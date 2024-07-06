@@ -51,7 +51,8 @@ requirements:
 
 test:
   requires:
-    - pyside6
+    - pyside6  # [py>=3.9]
+    - pyqt  # [py<3.9]
   commands:
     - mayavi2 --help
   imports:
