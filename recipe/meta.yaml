@@ -50,7 +50,7 @@ requirements:
     - setuptools
 
 test:
-  requiries:
+  requires:
     - pyside6
   commands:
     - mayavi2 --help
