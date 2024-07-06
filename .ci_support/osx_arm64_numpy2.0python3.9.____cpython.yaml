@@ -24,8 +24,8 @@ pin_run_as_build:
     max_pin: x.x
 python:
 - 3.9.* *_cpython
-qt_main:
-- '5.15'
+qt6_main:
+- '6.7'
 target_platform:
 - osx-arm64
 vtk:
