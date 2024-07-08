@@ -2,10 +2,12 @@ MACOSX_DEPLOYMENT_TARGET:
 - '11.0'
 MACOSX_SDK_VERSION:
 - '11.0'
+build_variant:
+- pyqt
 c_compiler:
 - clang
 c_compiler_version:
-- '13'
+- '16'
 c_stdlib:
 - macosx_deployment_target
 c_stdlib_version:
@@ -24,8 +26,8 @@ pin_run_as_build:
     max_pin: x.x
 python:
 - 3.12.* *_cpython
-qt6_main:
-- '6.7'
+qt_main:
+- '5.15'
 target_platform:
 - osx-arm64
 vtk:
