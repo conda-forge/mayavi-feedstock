@@ -6,7 +6,7 @@
 # mayavi, etc.) until the ecosystem updates
 {% set build = build + 100 %}  # [build_variant == "pyside6"]
 {% set build = build + 200 %}  # [build_variant == "pyqt"]
-{% set build_string = '{}_py{}h{}_{}'.format(build_variant, CONDA_PY, PKG_HASH, build) %}
+{% set build_string = '{}_py{}_{}'.format(build_variant, CONDA_PY, build) %}
 
 package:
   name: mayavi
@@ -28,7 +28,7 @@ build:
     - tvtk_doc = tvtk.tools.tvtk_doc:main
   # C99 issue on macOS, see failures in
   # https://github.com/conda-forge/mayavi-feedstock/pull/80
-  skip: true  # [py<39 and osx or py<39 and build_varint == "pyside6"]
+  skip: true  # [(py<39 and osx) or (py<39 and build_varint == "pyside6")]
 
 requirements:
   build:
