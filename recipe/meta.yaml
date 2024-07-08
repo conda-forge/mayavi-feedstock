@@ -28,7 +28,7 @@ build:
     - tvtk_doc = tvtk.tools.tvtk_doc:main
   # C99 issue on macOS, see failures in
   # https://github.com/conda-forge/mayavi-feedstock/pull/80
-  skip: True  # [py<39 and osx]
+  skip: True  # [py<39 and osx or py<310 and build_varint == "pyside6"]
 
 requirements:
   build:
