@@ -39,14 +39,16 @@ requirements:
     - numpy                                  # [build_platform != target_platform]
     - cython                                 # [build_platform != target_platform]
     - vtk                                    # [build_platform != target_platform]
-    - qt-main                                # [build_platform != target_platform]
+    - qt-main                                # [build_platform != target_platform and build_variant == "pyqt"]
+    - qt6-main                                # [build_platform != target_platform and build_variant == "pyside6"]
   host:
     - python
     - pip
     - cython
     - numpy
     - vtk
-    - qt-main
+    - qt-main  # [build_variant == "pyqt"]
+    - qt6-main  # [build_variant == "pyside6"]
     - traitsui
     - apptools
   run:
