@@ -8,10 +8,6 @@ jobs:
     vmImage: ubuntu-latest
   strategy:
     matrix:
-      linux_64_build_variantpyqtnumpy1.22python3.8.____cpython:
-        CONFIG: linux_64_build_variantpyqtnumpy1.22python3.8.____cpython
-        UPLOAD_PACKAGES: 'True'
-        DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
       linux_64_build_variantpyqtnumpy2.0python3.10.____cpython:
         CONFIG: linux_64_build_variantpyqtnumpy2.0python3.10.____cpython
         UPLOAD_PACKAGES: 'True'
@@ -24,14 +20,6 @@ jobs:
         CONFIG: linux_64_build_variantpyqtnumpy2.0python3.12.____cpython
         UPLOAD_PACKAGES: 'True'
         DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
-      linux_64_build_variantpyqtnumpy2.0python3.9.____cpython:
-        CONFIG: linux_64_build_variantpyqtnumpy2.0python3.9.____cpython
-        UPLOAD_PACKAGES: 'True'
-        DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
-      linux_64_build_variantpyside6numpy1.22python3.8.____cpython:
-        CONFIG: linux_64_build_variantpyside6numpy1.22python3.8.____cpython
-        UPLOAD_PACKAGES: 'True'
-        DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
       linux_64_build_variantpyside6numpy2.0python3.10.____cpython:
         CONFIG: linux_64_build_variantpyside6numpy2.0python3.10.____cpython
         UPLOAD_PACKAGES: 'True'
@@ -42,10 +30,6 @@ jobs:
         DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
       linux_64_build_variantpyside6numpy2.0python3.12.____cpython:
         CONFIG: linux_64_build_variantpyside6numpy2.0python3.12.____cpython
-        UPLOAD_PACKAGES: 'True'
-        DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
-      linux_64_build_variantpyside6numpy2.0python3.9.____cpython:
-        CONFIG: linux_64_build_variantpyside6numpy2.0python3.9.____cpython
         UPLOAD_PACKAGES: 'True'
         DOCKER_IMAGE: quay.io/condaforge/linux-anvil-cos7-x86_64
   timeoutInMinutes: 360
