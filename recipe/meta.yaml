@@ -1,4 +1,12 @@
 {% set version = "4.8.2" %}
+{% set build = 4 %}
+
+# Adapted from https://github.com/conda-forge/vtk-feedstock/blob/main/recipe/meta.yaml
+# PySide6 is lower priority than PyQt5 for backward compat (e.g., with matplotlib,
+# mayavi, etc.) until the ecosystem updates
+{% set build = build + 100 %}  # [build_variant == "pyside6"]
+{% set build = build + 200 %}  # [build_variant == "pyqt"]
+{% set build_string = '{}_py{}h{}_{}'.format(build_variant, CONDA_PY, PKG_HASH, build) %}
 
 package:
   name: mayavi
@@ -13,7 +21,8 @@ source:
     - cython.patch
 
 build:
-  number: 3
+  number: {{ build }}
+  string: {{ build_string }}
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
@@ -47,11 +56,11 @@ requirements:
     - pyface
     - apptools
     - envisage
+    - pyqt  # [build_variant == "pyqt"]
+    - pyside6  # [build_variant == "pyside6"]
     - setuptools
 
 test:
-  requires:
-    - pyqt
   commands:
     - mayavi2 --help
   imports:
