@@ -1,4 +1,11 @@
 {% set version = "4.8.2" %}
+{% set build = 4 %}
+
+# Adapted from https://github.com/conda-forge/vtk-feedstock/blob/main/recipe/meta.yaml
+# PySide6 is lower priority than PyQt5 for backward compat (e.g., with matplotlib,
+# mayavi, etc.) until the ecosystem updates
+{% set build = build + 100 %}  # [build_variant == "pyside6"]
+{% set build = build + 200 %}  # [build_variant == "pyqt"]
 
 package:
   name: mayavi
@@ -13,13 +20,14 @@ source:
     - cython.patch
 
 build:
-  number: 3
+  number: {{ build }}
+  string: "{{ build_variant }}_py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ build }}"
+  skip: true  # [py<310]
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
   # C99 issue on macOS, see failures in
   # https://github.com/conda-forge/mayavi-feedstock/pull/80
-  skip: True  # [py<39 and osx]
 
 requirements:
   build:
@@ -30,14 +38,16 @@ requirements:
     - numpy                                  # [build_platform != target_platform]
     - cython                                 # [build_platform != target_platform]
     - vtk                                    # [build_platform != target_platform]
-    - qt-main                                # [build_platform != target_platform]
+    - qt-main                                # [build_platform != target_platform and build_variant == "pyqt"]
+    - qt6-main                                # [build_platform != target_platform and build_variant == "pyside6"]
   host:
     - python
     - pip
     - cython
     - numpy
     - vtk
-    - qt-main
+    - qt-main  # [build_variant == "pyqt"]
+    - qt6-main  # [build_variant == "pyside6"]
     - traitsui
     - apptools
   run:
@@ -47,11 +57,11 @@ requirements:
     - pyface
     - apptools
     - envisage
+    - pyqt  # [build_variant == "pyqt"]
+    - pyside6  # [build_variant == "pyside6"]
     - setuptools
 
 test:
-  requires:
-    - pyqt
   commands:
     - mayavi2 --help
   imports:
