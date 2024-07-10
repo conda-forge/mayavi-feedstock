@@ -1,4 +1,4 @@
 build_variant:
   - "pyqt"
   - "pyside6"
-  - "noqt"
+  - "noqt"  # [linux64]
