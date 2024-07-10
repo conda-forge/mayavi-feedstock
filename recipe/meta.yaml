@@ -1,11 +1,12 @@
 {% set version = "4.8.2" %}
-{% set build = 4 %}
+{% set build = 5 %}
 
 # Adapted from https://github.com/conda-forge/vtk-feedstock/blob/main/recipe/meta.yaml
 # PySide6 is lower priority than PyQt5 for backward compat (e.g., with matplotlib,
 # mayavi, etc.) until the ecosystem updates
-{% set build = build + 100 %}  # [build_variant == "pyside6"]
-{% set build = build + 200 %}  # [build_variant == "pyqt"]
+{% set build = build + 100 %}  # [build_variant == "noqt"]
+{% set build = build + 200 %}  # [build_variant == "pyside6"]
+{% set build = build + 300 %}  # [build_variant == "pyqt"]
 
 package:
   name: mayavi
@@ -33,32 +34,35 @@ requirements:
   build:
     - {{ compiler('c') }}
     - {{ stdlib("c") }}
-    - cross-python_{{ target_platform }}     # [build_platform != target_platform]
-    - python                                 # [build_platform != target_platform]
-    - numpy                                  # [build_platform != target_platform]
-    - cython                                 # [build_platform != target_platform]
-    - vtk                                    # [build_platform != target_platform]
-    - qt-main                                # [build_platform != target_platform and build_variant == "pyqt"]
-    - qt6-main                                # [build_platform != target_platform and build_variant == "pyside6"]
+    - cross-python_{{ target_platform }}  # [build_platform != target_platform]
+    - python                              # [build_platform != target_platform]
+    - numpy                               # [build_platform != target_platform]
+    - cython                              # [build_platform != target_platform]
+    - vtk =*=osmesa_*                     # [build_platform != target_platform and build_variant == "noqt"]
+    - vtk =*=qt_*                         # [build_platform != target_platform and build_variant != "noqt"]
+    - qt-main                             # [build_platform != target_platform and build_variant == "pyqt"]
+    - qt6-main                            # [build_platform != target_platform and build_variant == "pyside6"]
   host:
     - python
     - pip
     - cython
     - numpy
-    - vtk
-    - qt-main  # [build_variant == "pyqt"]
-    - qt6-main  # [build_variant == "pyside6"]
+    - vtk =*=osmesa_*  # [build_variant == "noqt"]
+    - vtk =*=qt_*      # [build_variant != "noqt"]
+    - qt-main          # [build_variant == "pyqt"]
+    - qt6-main         # [build_variant == "pyside6"]
     - traitsui
     - apptools
   run:
     - python
-    - vtk
+    - vtk =*=qt_*  # [build_variant != "noqt"]
+    - vtk          # [build_variant == "noqt"]
     - traitsui
     - pyface
     - apptools
     - envisage
-    - pyqt  # [build_variant == "pyqt"]
-    - pyside6  # [build_variant == "pyside6"]
+    - pyqt         # [build_variant == "pyqt"]
+    - pyside6      # [build_variant == "pyside6"]
     - setuptools
 
 test:
