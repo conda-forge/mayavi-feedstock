@@ -39,7 +39,7 @@ requirements:
     - numpy                               # [build_platform != target_platform]
     - cython                              # [build_platform != target_platform]
     - vtk =*=osmesa_*                     # [build_platform != target_platform and build_variant == "noqt"]
-    - vtk =*=vtk_*                        # [build_platform != target_platform and build_variant != "noqt"]
+    - vtk =*=qt_*                         # [build_platform != target_platform and build_variant != "noqt"]
     - qt-main                             # [build_platform != target_platform and build_variant == "pyqt"]
     - qt6-main                            # [build_platform != target_platform and build_variant == "pyside6"]
   host:
