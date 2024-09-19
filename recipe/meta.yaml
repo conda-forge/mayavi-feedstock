@@ -45,6 +45,7 @@ requirements:
   host:
     - python
     - pip
+    - setuptools
     - cython
     - numpy
     - vtk =*=osmesa_*  # [build_variant == "noqt"]
