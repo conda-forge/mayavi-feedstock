@@ -8,41 +8,41 @@ jobs:
     vmImage: macOS-12
   strategy:
     matrix:
-      osx_64_build_variantpyqtnumpy2.0python3.10.____cpython:
-        CONFIG: osx_64_build_variantpyqtnumpy2.0python3.10.____cpython
+      osx_64_build_variantpyqtpython3.10.____cpython:
+        CONFIG: osx_64_build_variantpyqtpython3.10.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_64_build_variantpyqtnumpy2.0python3.11.____cpython:
-        CONFIG: osx_64_build_variantpyqtnumpy2.0python3.11.____cpython
+      osx_64_build_variantpyqtpython3.11.____cpython:
+        CONFIG: osx_64_build_variantpyqtpython3.11.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_64_build_variantpyqtnumpy2.0python3.12.____cpython:
-        CONFIG: osx_64_build_variantpyqtnumpy2.0python3.12.____cpython
+      osx_64_build_variantpyqtpython3.12.____cpython:
+        CONFIG: osx_64_build_variantpyqtpython3.12.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_64_build_variantpyside6numpy2.0python3.10.____cpython:
-        CONFIG: osx_64_build_variantpyside6numpy2.0python3.10.____cpython
+      osx_64_build_variantpyside6python3.10.____cpython:
+        CONFIG: osx_64_build_variantpyside6python3.10.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_64_build_variantpyside6numpy2.0python3.11.____cpython:
-        CONFIG: osx_64_build_variantpyside6numpy2.0python3.11.____cpython
+      osx_64_build_variantpyside6python3.11.____cpython:
+        CONFIG: osx_64_build_variantpyside6python3.11.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_64_build_variantpyside6numpy2.0python3.12.____cpython:
-        CONFIG: osx_64_build_variantpyside6numpy2.0python3.12.____cpython
+      osx_64_build_variantpyside6python3.12.____cpython:
+        CONFIG: osx_64_build_variantpyside6python3.12.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_arm64_build_variantpyqtnumpy2.0python3.10.____cpython:
-        CONFIG: osx_arm64_build_variantpyqtnumpy2.0python3.10.____cpython
+      osx_arm64_build_variantpyqtpython3.10.____cpython:
+        CONFIG: osx_arm64_build_variantpyqtpython3.10.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_arm64_build_variantpyqtnumpy2.0python3.11.____cpython:
-        CONFIG: osx_arm64_build_variantpyqtnumpy2.0python3.11.____cpython
+      osx_arm64_build_variantpyqtpython3.11.____cpython:
+        CONFIG: osx_arm64_build_variantpyqtpython3.11.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_arm64_build_variantpyqtnumpy2.0python3.12.____cpython:
-        CONFIG: osx_arm64_build_variantpyqtnumpy2.0python3.12.____cpython
+      osx_arm64_build_variantpyqtpython3.12.____cpython:
+        CONFIG: osx_arm64_build_variantpyqtpython3.12.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_arm64_build_variantpyside6numpy2.0python3.10.____cpython:
-        CONFIG: osx_arm64_build_variantpyside6numpy2.0python3.10.____cpython
+      osx_arm64_build_variantpyside6python3.10.____cpython:
+        CONFIG: osx_arm64_build_variantpyside6python3.10.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_arm64_build_variantpyside6numpy2.0python3.11.____cpython:
-        CONFIG: osx_arm64_build_variantpyside6numpy2.0python3.11.____cpython
+      osx_arm64_build_variantpyside6python3.11.____cpython:
+        CONFIG: osx_arm64_build_variantpyside6python3.11.____cpython
         UPLOAD_PACKAGES: 'True'
-      osx_arm64_build_variantpyside6numpy2.0python3.12.____cpython:
-        CONFIG: osx_arm64_build_variantpyside6numpy2.0python3.12.____cpython
+      osx_arm64_build_variantpyside6python3.12.____cpython:
+        CONFIG: osx_arm64_build_variantpyside6python3.12.____cpython
         UPLOAD_PACKAGES: 'True'
   timeoutInMinutes: 360
   variables: {}
