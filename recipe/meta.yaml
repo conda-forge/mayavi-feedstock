@@ -23,7 +23,7 @@ source:
 build:
   number: {{ build }}
   string: "{{ build_variant }}_py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ build }}"
-  skip: true  # [py<310]
+  skip: true  # [py<310 or (py>=313 and build_variant == "pyqt")]
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
