@@ -1,5 +1,5 @@
 build_variant:
-- pyqt
+- pyside6
 c_compiler:
 - vs2019
 c_stdlib:
@@ -9,15 +9,15 @@ channel_sources:
 channel_targets:
 - conda-forge main
 numpy:
-- '2.0'
+- '2'
 pin_run_as_build:
   python:
     min_pin: x.x
     max_pin: x.x
 python:
-- 3.10.* *_cpython
+- 3.13.* *_cp313
 qt6_main:
-- '6.7'
+- '6.8'
 qt_main:
 - '5.15'
 target_platform:
