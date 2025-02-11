@@ -19,15 +19,15 @@ channel_targets:
 macos_machine:
 - arm64-apple-darwin20.0.0
 numpy:
-- '2.0'
+- '2'
 pin_run_as_build:
   python:
     min_pin: x.x
     max_pin: x.x
 python:
-- 3.11.* *_cpython
+- 3.13.* *_cp313
 qt6_main:
-- '6.7'
+- '6.8'
 qt_main:
 - '5.15'
 target_platform:

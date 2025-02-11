@@ -3,7 +3,7 @@ MACOSX_DEPLOYMENT_TARGET:
 MACOSX_SDK_VERSION:
 - '11.0'
 build_variant:
-- pyside6
+- pyqt
 c_compiler:
 - clang
 c_compiler_version:
@@ -25,9 +25,9 @@ pin_run_as_build:
     min_pin: x.x
     max_pin: x.x
 python:
-- 3.11.* *_cpython
+- 3.10.* *_cpython
 qt6_main:
-- '6.7'
+- '6.8'
 qt_main:
 - '5.15'
 target_platform:
