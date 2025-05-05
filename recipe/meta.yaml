@@ -52,7 +52,7 @@ requirements:
     - apptools
   run:
     - python
-    - vtk-base
+    - {{ pin_compatible('vtk-base', max_pin='x.x') }}
     - traitsui
     - pyface
     - apptools
