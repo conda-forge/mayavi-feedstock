@@ -17,11 +17,13 @@ pin_run_as_build:
 python:
 - 3.13.* *_cp313
 qt6_main:
-- '6.8'
+- '6.9'
 qt_main:
 - '5.15'
 target_platform:
 - win-64
+vtk_base:
+- 9.3.1
 zip_keys:
 - - python
   - numpy
