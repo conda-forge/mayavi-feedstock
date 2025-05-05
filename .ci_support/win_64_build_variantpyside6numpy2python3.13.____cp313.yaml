@@ -18,6 +18,8 @@ python:
 - 3.13.* *_cp313
 target_platform:
 - win-64
+vtk:
+- 9.3.1
 vtk_base:
 - 9.3.1
 zip_keys:
