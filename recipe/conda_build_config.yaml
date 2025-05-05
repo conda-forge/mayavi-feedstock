@@ -1,4 +1,4 @@
-build_variant:
-  - "pyqt"
-  - "pyside6"
-  - "noqt"  # [linux64]
+vtk:
+- 9.4.2
+vtk_base:
+- 9.4.2

@@ -1,5 +1,3 @@
-build_variant:
-- pyqt
 c_compiler:
 - vs2019
 c_stdlib:
@@ -9,19 +7,19 @@ channel_sources:
 channel_targets:
 - conda-forge main
 numpy:
-- '2.0'
+- '2'
 pin_run_as_build:
   python:
     min_pin: x.x
     max_pin: x.x
 python:
-- 3.11.* *_cpython
-qt6_main:
-- '6.8'
-qt_main:
-- '5.15'
+- 3.13.* *_cp313
 target_platform:
 - win-64
+vtk:
+- 9.4.2
+vtk_base:
+- 9.4.2
 zip_keys:
 - - python
   - numpy

@@ -1,12 +1,6 @@
 {% set version = "4.8.2" %}
-{% set build = 9 %}
-
-# Adapted from https://github.com/conda-forge/vtk-feedstock/blob/main/recipe/meta.yaml
-# PySide6 is lower priority than PyQt5 for backward compat (e.g., with matplotlib,
-# mayavi, etc.) until the ecosystem updates
-{% set build = build + 100 %}  # [build_variant == "noqt"]
-{% set build = build + 200 %}  # [build_variant == "pyside6"]
-{% set build = build + 300 %}  # [build_variant == "pyqt"]
+# 309 was our largest number under the multiple build system
+{% set build = 310 %}
 
 package:
   name: mayavi
@@ -19,11 +13,11 @@ source:
   patches:
     # Using Cython 3.0.10 and NumPy 2.0 installed rather than Cython 3.0.8
     - cython.patch
+    # fix for 9.4.2, simpler version of https://github.com/enthought/mayavi/pull/1342
+    - badwindow.patch
 
 build:
   number: {{ build }}
-  string: "{{ build_variant }}_py{{ CONDA_PY }}h{{ PKG_HASH }}_{{ build }}"
-  skip: true  # [py<310 or (py>=313 and build_variant == "pyqt")]
   entry_points:
     - mayavi2 = mayavi.scripts.mayavi2:main
     - tvtk_doc = tvtk.tools.tvtk_doc:main
@@ -38,32 +32,23 @@ requirements:
     - python                              # [build_platform != target_platform]
     - numpy                               # [build_platform != target_platform]
     - cython                              # [build_platform != target_platform]
-    - vtk =*=osmesa_*                     # [build_platform != target_platform and build_variant == "noqt"]
-    - vtk =*=qt_*                         # [build_platform != target_platform and build_variant != "noqt"]
-    - qt-main                             # [build_platform != target_platform and build_variant == "pyqt"]
-    - qt6-main                            # [build_platform != target_platform and build_variant == "pyside6"]
+    - vtk-base                            # [build_platform != target_platform]
   host:
     - python
     - pip
     - setuptools
     - cython
     - numpy
-    - vtk =*=osmesa_*  # [build_variant == "noqt"]
-    - vtk =*=qt_*      # [build_variant != "noqt"]
-    - qt-main          # [build_variant == "pyqt"]
-    - qt6-main         # [build_variant == "pyside6"]
+    - vtk-base
     - traitsui
     - apptools
   run:
     - python
-    - vtk =*=qt_*  # [build_variant != "noqt"]
-    - vtk          # [build_variant == "noqt"]
+    - {{ pin_compatible('vtk-base', max_pin='x.x') }}
     - traitsui
     - pyface
     - apptools
     - envisage
-    - pyqt         # [build_variant == "pyqt"]
-    - pyside6      # [build_variant == "pyside6"]
     - setuptools
 
 test:
