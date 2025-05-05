@@ -4,7 +4,6 @@
 # Adapted from https://github.com/conda-forge/vtk-feedstock/blob/main/recipe/meta.yaml
 # PySide6 is lower priority than PyQt5 for backward compat (e.g., with matplotlib,
 # mayavi, etc.) until the ecosystem updates
-{% set build = build + 100 %}  # [build_variant == "noqt"]
 {% set build = build + 200 %}  # [build_variant == "pyside6"]
 {% set build = build + 300 %}  # [build_variant == "pyqt"]
 
