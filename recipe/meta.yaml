@@ -20,7 +20,7 @@ source:
     # Using Cython 3.0.10 and NumPy 2.0 installed rather than Cython 3.0.8
     - cython.patch
     # fix for 9.4.2, simpler version of https://github.com/enthought/mayavi/pull/1342
-    -
+    - bad
 
 build:
   number: {{ build }}
@@ -41,8 +41,6 @@ requirements:
     - numpy                               # [build_platform != target_platform]
     - cython                              # [build_platform != target_platform]
     - vtk-base                            # [build_platform != target_platform]
-    - qt-main                             # [build_platform != target_platform and build_variant == "pyqt"]
-    - qt6-main                            # [build_platform != target_platform and build_variant == "pyside6"]
   host:
     - python
     - pip
@@ -50,8 +48,6 @@ requirements:
     - cython
     - numpy
     - vtk-base
-    - qt-main          # [build_variant == "pyqt"]
-    - qt6-main         # [build_variant == "pyside6"]
     - traitsui
     - apptools
   run:
