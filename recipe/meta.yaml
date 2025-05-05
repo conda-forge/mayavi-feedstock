@@ -1,5 +1,6 @@
 {% set version = "4.8.2" %}
-{% set build = 310 %}  # 309 was our largest number under the multiple build system
+# 309 was our largest number under the multiple build system
+{% set build = 310 %}
 
 package:
   name: mayavi
