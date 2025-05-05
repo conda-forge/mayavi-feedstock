@@ -1,5 +1,5 @@
 {% set version = "4.8.2" %}
-{% set build = 10 %}
+{% set build = 310 %}  # 309 was our largest number under the multiple build system
 
 package:
   name: mayavi
@@ -13,7 +13,7 @@ source:
     # Using Cython 3.0.10 and NumPy 2.0 installed rather than Cython 3.0.8
     - cython.patch
     # fix for 9.4.2, simpler version of https://github.com/enthought/mayavi/pull/1342
-    - bad
+    - badwindow.patch
 
 build:
   number: {{ build }}
