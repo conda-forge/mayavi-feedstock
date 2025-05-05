@@ -1,0 +1,17 @@
+diff --git a/tvtk/vtk_parser.py b/tvtk/vtk_parser.py
+index b14b197d..340e03bf 100644
+--- a/tvtk/vtk_parser.py
++++ b/tvtk/vtk_parser.py
+@@ -641,6 +641,12 @@ class VTKMethodParser:
+             # These hang on Windows (and maybe Fedora 34)
+             elif (klass_name in ('vtkDataEncoder', 'vtkWebApplication')):
+                 continue
++            # This crashes during generation
++            elif (
++                (vtk_major_version, vtk_minor_version) == (9, 4)
++                and klass_name == "vtkXOpenGLRenderWindow"
++            ):
++                continue
+             # we can actually process it
+             elif ('Get' + method[3:]) in methods:
+                 key = method[3:]

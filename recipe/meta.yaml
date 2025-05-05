@@ -1,5 +1,5 @@
 {% set version = "4.8.2" %}
-{% set build = 9 %}
+{% set build = 10 %}
 
 # Adapted from https://github.com/conda-forge/vtk-feedstock/blob/main/recipe/meta.yaml
 # PySide6 is lower priority than PyQt5 for backward compat (e.g., with matplotlib,
@@ -19,6 +19,8 @@ source:
   patches:
     # Using Cython 3.0.10 and NumPy 2.0 installed rather than Cython 3.0.8
     - cython.patch
+    # fix for 9.4.2, simpler version of https://github.com/enthought/mayavi/pull/1342
+    -
 
 build:
   number: {{ build }}
@@ -38,8 +40,7 @@ requirements:
     - python                              # [build_platform != target_platform]
     - numpy                               # [build_platform != target_platform]
     - cython                              # [build_platform != target_platform]
-    - vtk =*=osmesa_*                     # [build_platform != target_platform and build_variant == "noqt"]
-    - vtk =*=qt_*                         # [build_platform != target_platform and build_variant != "noqt"]
+    - vtk-base                            # [build_platform != target_platform]
     - qt-main                             # [build_platform != target_platform and build_variant == "pyqt"]
     - qt6-main                            # [build_platform != target_platform and build_variant == "pyside6"]
   host:
@@ -48,16 +49,14 @@ requirements:
     - setuptools
     - cython
     - numpy
-    - vtk =*=osmesa_*  # [build_variant == "noqt"]
-    - vtk =*=qt_*      # [build_variant != "noqt"]
+    - vtk-base
     - qt-main          # [build_variant == "pyqt"]
     - qt6-main         # [build_variant == "pyside6"]
     - traitsui
     - apptools
   run:
     - python
-    - vtk =*=qt_*  # [build_variant != "noqt"]
-    - vtk          # [build_variant == "noqt"]
+    - vtk-base
     - traitsui
     - pyface
     - apptools
