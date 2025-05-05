@@ -1,3 +1,7 @@
 build_variant:
   - "pyqt"
   - "pyside6"
+vtk:
+- 9.4.2
+vtk-base:
+- 9.4.2
