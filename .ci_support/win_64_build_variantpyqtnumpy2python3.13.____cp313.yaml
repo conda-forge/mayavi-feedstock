@@ -19,9 +19,9 @@ python:
 target_platform:
 - win-64
 vtk:
-- 9.3.1
+- 9.4.2
 vtk_base:
-- 9.3.1
+- 9.4.2
 zip_keys:
 - - python
   - numpy
