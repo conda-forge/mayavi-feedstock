@@ -98,7 +98,7 @@ index 6f42b2e8..1e1a1db6 100644
      try:
          return _arr_vtk[numeric_array_type]
 diff --git a/tvtk/code_gen.py b/tvtk/code_gen.py
-index 8ad3ab6a..3f770291 100644
+index 8ad3ab6a..54aa7248 100644
 --- a/tvtk/code_gen.py
 +++ b/tvtk/code_gen.py
 @@ -1,13 +1,18 @@
@@ -110,7 +110,7 @@ index 8ad3ab6a..3f770291 100644
  ..code-block:: console
  
 -    $ python -ic "from tvtk.code_gen import main; main()" -szv
-+    $ VTK_PARSER_VERBOSE=1 python -m tvtk.code_gen -szvno $PWD/tvtk
++    $ VTK_PARSER_VERBOSE=1 VTK_PARSER_GC=1 python -m tvtk.code_gen -szvno $PWD/tvtk
  
  On failures you can then for example do ``import pdb; pdb.pm()`` to do
 -post-mortem debugging.
@@ -608,10 +608,10 @@ index c97635f5..ce88ce9e 100644
                  res.extend([
                      'ComputeIORFromReflectance', 'ComputeReflectanceFromIOR',
 diff --git a/tvtk/vtk_module.py b/tvtk/vtk_module.py
-index 69dad0eb..a9b13194 100644
+index 69dad0eb..8199791a 100644
 --- a/tvtk/vtk_module.py
 +++ b/tvtk/vtk_module.py
-@@ -52,4 +52,12 @@ if vtk_version.startswith('9.3'):
+@@ -52,4 +52,19 @@ if vtk_version.startswith('9.3'):
      try:
          del vtkDGBoundsResponder, vtkDGOpenGLRenderer, vtkDGSidesResponder
      except NameError:
@@ -619,20 +619,29 @@ index 69dad0eb..a9b13194 100644
 \ No newline at end of file
 +        pass
 +
-+if vtk_version in ['9.4.0', '9.4.1']:
++if vtk_version in ["9.4.0", "9.4.1", "9.4.2"]:
 +    # Instantiating these using TVTK causes a crash on VTK 9.4.x so skipping.
 +    SKIP = ['vtkIOSSReader', 'vtkIOSSCellGridReader']
 +    try:
 +        del vtkIOSSReader, vtkIOSSCellGridReader
 +    except NameError:
 +        pass
++    if vtk_version == "9.4.2":
++        # vtkXOpenGLRenderWindow segfaults when being deconstructed on 9.4.2
++        SKIP += ["vtkXOpenGLRenderWindow"]
++        try:
++            del vtkXOpenGLRenderWindow
++        except NameError:
++            pass
 diff --git a/tvtk/vtk_parser.py b/tvtk/vtk_parser.py
-index 031af8f3..b14b197d 100644
+index 031af8f3..d3e108b0 100644
 --- a/tvtk/vtk_parser.py
 +++ b/tvtk/vtk_parser.py
-@@ -8,13 +8,12 @@ type information, and organizes them.
+@@ -7,14 +7,14 @@ type information, and organizes them.
+ # License: BSD Style.
  
  import collections.abc
++import gc
  import re
 -import types
  import os
@@ -645,7 +654,16 @@ index 031af8f3..b14b197d 100644
  
  
  class VTKMethodParser:
-@@ -632,18 +631,6 @@ class VTKMethodParser:
+@@ -116,6 +116,8 @@ class VTKMethodParser:
+         self._state_patn = re.compile('To[A-Z0-9]')
+         self._verbose = \
+             os.getenv('VTK_PARSER_VERBOSE', '').lower() in ('1', 'true')
++        self._gc = \
++            os.getenv('VTK_PARSER_GC', '').lower() in ('1', 'true')
+         self._initialize()
+ 
+     #################################################################
+@@ -632,18 +634,6 @@ class VTKMethodParser:
                  # vtkProp.Get/SetAllocatedRenderTime is private and
                  # SetAllocatedRenderTime takes two args, don't wrap it.
                  continue
@@ -664,7 +682,7 @@ index 031af8f3..b14b197d 100644
              elif (klass_name == 'vtkContextMouseEvent' and
                    method[3:] == 'Interactor'):
                  continue
-@@ -668,54 +655,46 @@ class VTKMethodParser:
+@@ -668,54 +658,46 @@ class VTKMethodParser:
  
          # Find the default and range of the values.
          if gsm:
@@ -747,7 +765,34 @@ index 031af8f3..b14b197d 100644
                          if klass_name == "vtkAxisActor":
                              if key in (
                                  "AxisOnOrigin", "Use2DMode", "UseTextActor3D",
-@@ -765,7 +744,7 @@ class VTKMethodParser:
+@@ -729,18 +711,20 @@ class VTKMethodParser:
+                                 default = int(bool(default))
+ 
+                     if value:
++                        if self._verbose:
++                            print(f"  Calling {klass_name}.Get{key}MinValue()")
+                         low = getattr(obj, 'Get%sMinValue' % key)()
++                        if self._verbose:
++                            print(f"  Calling {klass_name}.Get{key}MaxValue()")
+                         high = getattr(obj, 'Get%sMaxValue' % key)()
+                         gsm[key] = (default, (low, high))
+                     else:
+                         gsm[key] = (default, None)
++                if self._gc and self._verbose:
++                    print(f"  GC {klass_name}")
+                 del obj
+-                # Segfaults can be exposed by uncommenting these lines,
+-                # leave them commented while running because they
+-                # slow things down quite a bit
+-                # print('GC', klass_name)
+-                # import gc
+-                # gc.collect()
++                if self._gc:
++                    gc.collect()
+             else:
+                 # We still might have methods that have a default range.
+                 for key, value in gsm.items():
+@@ -765,7 +749,7 @@ class VTKMethodParser:
                  meths.remove(method)
          return meths
  
@@ -756,7 +801,7 @@ index 031af8f3..b14b197d 100644
          """Given a VTK class, `klass`, returns an instance of the
          class.
  
-@@ -774,6 +753,8 @@ class VTKMethodParser:
+@@ -774,6 +758,8 @@ class VTKMethodParser:
          the 'state' methods and the ranges for the Get/Set methods.
  
          """
@@ -765,7 +810,7 @@ index 031af8f3..b14b197d 100644
          obj = None
          try:
              obj = klass()
-@@ -783,7 +764,8 @@ class VTKMethodParser:
+@@ -783,7 +769,8 @@ class VTKMethodParser:
                  n = t.get_node(klass.__name__)
                  if n is not None:
                      for c in n.children:
