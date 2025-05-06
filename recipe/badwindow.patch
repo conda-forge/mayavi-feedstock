@@ -1,5 +1,150 @@
+diff --git a/tvtk/array_handler.py b/tvtk/array_handler.py
+index 6f42b2e8..1e1a1db6 100644
+--- a/tvtk/array_handler.py
++++ b/tvtk/array_handler.py
+@@ -197,9 +197,9 @@ def get_vtk_array_type(numeric_array_type):
+         numpy.dtype(ULONG_TYPE_CODE): vtkConstants.VTK_UNSIGNED_LONG,
+         numpy.dtype(LONG_TYPE_CODE): vtkConstants.VTK_LONG,
+     }
+-    for t in _extra:
++    for t, val in _extra.items():
+         if t not in _arr_vtk:
+-            _arr_vtk[t] = _extra[t]
++            _arr_vtk[t] = val
+ 
+     try:
+         return _arr_vtk[numeric_array_type]
+diff --git a/tvtk/code_gen.py b/tvtk/code_gen.py
+index 8ad3ab6a..3f770291 100644
+--- a/tvtk/code_gen.py
++++ b/tvtk/code_gen.py
+@@ -1,13 +1,18 @@
+ """This module generates tvtk (Traited VTK) classes from the VTK-Python API.
+ 
+-This can be evoked for example by:
++This can be evoked for example by running from the ``mayavi`` root:
+ 
+ ..code-block:: console
+ 
+-    $ python -ic "from tvtk.code_gen import main; main()" -szv
++    $ VTK_PARSER_VERBOSE=1 python -m tvtk.code_gen -szvno $PWD/tvtk
+ 
+ On failures you can then for example do ``import pdb; pdb.pm()`` to do
+-post-mortem debugging.
++post-mortem debugging. If there are segfaults, the VTK_PARSER_VERBOSE=1 should help
++point to the culprit, which often needs to be worked around in
++``vtk_parser.py::VTKMethodParser._find_get_set_methods``.
++
++Exceptions to behaviors based on VTK versions and bugs etc. live in ``wrapper_gen.py``
++and ``tvtk_parser.py``.
+ """
+ # Author: Prabhu Ramachandran
+ # Copyright (c) 2004-2020, Enthought, Inc.
+@@ -107,7 +112,7 @@ class TVTKGenerator:
+             # Write the wrapper files.
+             tree = wrap_gen.get_tree().tree
+ 
+-            classes = []
++            classes = ['vtkObjectBase']
+             # This is another class we should not wrap and exists
+             # in version 8.1.0.
+             ignore = ['vtkOpenGLGL2PSHelperImpl'] + [
+@@ -121,11 +126,12 @@ class TVTKGenerator:
+                 if (name not in include and not name.startswith('vtk')) or \
+                         name.startswith('vtkQt'):
+                     continue
+-                if not hasattr(vtk, name) or not hasattr(getattr(vtk, name), 'IsA'):  # noqa
++                if not hasattr(vtk, name) or \
++                    not hasattr(getattr(vtk, name), 'AddObserver'):  # noqa
+                     # We need to wrap VTK classes that are derived
+                     # from vtkObjectBase, the others are
+                     # straightforward VTK classes that can be used as
+-                    # such.  All of these have an 'IsA' method so we
++                    # such.  All of these have an 'AddObserver' method so we
+                     # check for that.  Only the vtkObjectBase
+                     # subclasses support observers etc. and hence only
+                     # those make sense to wrap into TVTK.
+diff --git a/tvtk/common.py b/tvtk/common.py
+index bad08ce2..0b6a618d 100644
+--- a/tvtk/common.py
++++ b/tvtk/common.py
+@@ -5,7 +5,6 @@
+ # License: BSD Style.
+ 
+ from contextlib import contextmanager
+-import string
+ import re
+ import vtk
+ 
+@@ -67,10 +66,6 @@ def _sanitize_name(name):
+     return name
+ 
+ 
+-def is_version_9():
+-    return vtk_major_version > 8
+-
+-
+ def configure_connection(obj, inp):
+     """ Configure topology for vtk pipeline obj."""
+     if hasattr(inp, 'output_port'):
+diff --git a/tvtk/messenger.py b/tvtk/messenger.py
+index a11f8472..63f49525 100644
+--- a/tvtk/messenger.py
++++ b/tvtk/messenger.py
+@@ -145,7 +145,7 @@ class Messenger:
+ 
+         """
+         typ = type(callback)
+-        key = hash(obj)
++        key = id(obj)
+         if not key in self._signals:
+             self._signals[key] = {}
+         signals = self._signals[key]
+@@ -200,7 +200,7 @@ class Messenger:
+         if obj_is_hash:
+             key = obj
+         else:
+-            key = hash(obj)
++            key = id(obj)
+         if not key in signals:
+             return
+         if callback is None:
+@@ -282,11 +282,11 @@ class Messenger:
+         object.
+ 
+         """
+-        ret = self._signals.get(hash(obj))
++        ret = self._signals.get(id(obj))
+         if ret is None:
+             raise MessengerError(
+-                "No such object: %s, has registered itself "\
+-                "with the messenger."%obj
++                "No such object: %s, has registered itself "
++                "with the messenger." % obj
+             )
+         else:
+             return ret
+diff --git a/tvtk/vtk_module.py b/tvtk/vtk_module.py
+index 69dad0eb..a9b13194 100644
+--- a/tvtk/vtk_module.py
++++ b/tvtk/vtk_module.py
+@@ -52,4 +52,12 @@ if vtk_version.startswith('9.3'):
+     try:
+         del vtkDGBoundsResponder, vtkDGOpenGLRenderer, vtkDGSidesResponder
+     except NameError:
+-        pass
+\ No newline at end of file
++        pass
++
++if vtk_version in ['9.4.0', '9.4.1']:
++    # Instantiating these using TVTK causes a crash on VTK 9.4.x so skipping.
++    SKIP = ['vtkIOSSReader', 'vtkIOSSCellGridReader']
++    try:
++        del vtkIOSSReader, vtkIOSSCellGridReader
++    except NameError:
++        pass
 diff --git a/tvtk/vtk_parser.py b/tvtk/vtk_parser.py
-index 031af8f3..340e03bf 100644
+index 031af8f3..b14b197d 100644
 --- a/tvtk/vtk_parser.py
 +++ b/tvtk/vtk_parser.py
 @@ -8,13 +8,12 @@ type information, and organizes them.
@@ -36,20 +181,7 @@ index 031af8f3..340e03bf 100644
              elif (klass_name == 'vtkContextMouseEvent' and
                    method[3:] == 'Interactor'):
                  continue
-@@ -654,6 +641,12 @@ class VTKMethodParser:
-             # These hang on Windows (and maybe Fedora 34)
-             elif (klass_name in ('vtkDataEncoder', 'vtkWebApplication')):
-                 continue
-+            # This crashes during generation
-+            elif (
-+                (vtk_major_version, vtk_minor_version) == (9, 4)
-+                and klass_name == "vtkXOpenGLRenderWindow"
-+            ):
-+                continue
-             # we can actually process it
-             elif ('Get' + method[3:]) in methods:
-                 key = method[3:]
-@@ -668,54 +661,46 @@ class VTKMethodParser:
+@@ -668,54 +655,46 @@ class VTKMethodParser:
  
          # Find the default and range of the values.
          if gsm:
@@ -132,7 +264,7 @@ index 031af8f3..340e03bf 100644
                          if klass_name == "vtkAxisActor":
                              if key in (
                                  "AxisOnOrigin", "Use2DMode", "UseTextActor3D",
-@@ -765,7 +750,7 @@ class VTKMethodParser:
+@@ -765,7 +744,7 @@ class VTKMethodParser:
                  meths.remove(method)
          return meths
  
@@ -141,7 +273,7 @@ index 031af8f3..340e03bf 100644
          """Given a VTK class, `klass`, returns an instance of the
          class.
  
-@@ -774,6 +759,8 @@ class VTKMethodParser:
+@@ -774,6 +753,8 @@ class VTKMethodParser:
          the 'state' methods and the ranges for the Get/Set methods.
  
          """
@@ -150,7 +282,7 @@ index 031af8f3..340e03bf 100644
          obj = None
          try:
              obj = klass()
-@@ -783,7 +770,8 @@ class VTKMethodParser:
+@@ -783,7 +764,8 @@ class VTKMethodParser:
                  n = t.get_node(klass.__name__)
                  if n is not None:
                      for c in n.children:
@@ -160,3 +292,184 @@ index 031af8f3..340e03bf 100644
 +                            print(f"  Using super {t.get_class(c.name)} instead of {klass}")
                              break
          return obj
+diff --git a/tvtk/wrapper_gen.py b/tvtk/wrapper_gen.py
+index 95b9810e..1c3cb0d2 100644
+--- a/tvtk/wrapper_gen.py
++++ b/tvtk/wrapper_gen.py
+@@ -17,7 +17,8 @@ from itertools import chain
+ 
+ # Local imports (these are relative imports because the package is not
+ # installed when these modules are imported).
+-from .common import get_tvtk_name, camel2enthought, vtk_major_version, _sanitize_name
++from .common import get_tvtk_name, camel2enthought, _sanitize_name
++from .common import vtk_major_version, vtk_minor_version
+ 
+ from . import vtk_parser
+ from . import indenter
+@@ -54,7 +55,7 @@ def get_trait_def(value, **kwargs):
+     Example
+     -------
+     >>> get_trait_def([100., 200.], enter_set=True, auto_set=False)
+-    ('traits.Array', '', 'auto_set=False, enter_set=True, shape=(2,), dtype=float, value=[100.0, 200.0], cols=2')
++    ('traits.Array', '', 'auto_set=False, enter_set=True, shape=(None,), dtype=float, value=[100.0, 200.0], cols=2')
+     >>> get_trait_def(100, enter_set=True, auto_set=False)
+     ('traits.Int', '100', 'auto_set=False, enter_set=True')
+     >>> get_trait_def(u'something', enter_set=True, auto_set=False)
+@@ -80,7 +81,7 @@ def get_trait_def(value, **kwargs):
+         return 'traits.String', '{!r}'.format(value), kwargs_code
+ 
+     elif type_ in (tuple, list):
+-        shape = (len(value),)
++        shape = (None,)
+         dtypes = set(type(element) for element in value)
+         dtype = dtypes.pop().__name__ if len(dtypes) == 1 else None
+         if dtype == 'int' and sys.platform.startswith('win'):
+@@ -679,6 +680,10 @@ class WrapperGenerator:
+ 
+             if not vtk_val:
+                 default = self._reform_name(meths[m][0][0])
++                # Weirdness on NumPy 2.1 and vtk >= 9.3 that this does not show up as
++                # an option and creates problems
++                if klass.__name__ == "vtkPoints" and m == "DataType" and sys.platform == "win32":
++                    d["int32"] = vtk.VTK_ID_TYPE
+                 if extra_val is None:
+                     t_def = """tvtk_base.RevPrefixMap(%(d)s, default_value='%(default)s')""" % locals()
+                 elif hasattr(extra_val, '__iter__'):
+@@ -1591,22 +1596,22 @@ class WrapperGenerator:
+     #         the code for this trait,
+     #         i.e. getattr(self, name_of_method)(...)
+     special_traits = {
+-        '[a-zA-Z0-9]+\.Output$': (
++        r'[a-zA-Z0-9]+\.Output$': (
+             False, False, '_write_any_output'),
+-        '[a-zA-Z0-9]+\.Source$': (
++        r'[a-zA-Z0-9]+\.Source$': (
+             False, False, '_write_any_source'),
+-        '[a-zA-Z0-9]+\.ScalarType$': (
++        r'[a-zA-Z0-9]+\.ScalarType$': (
+             False, False, '_write_any_scalar_type'),
+ 
+         # In VTK > 4.5, Set/GetInput have multiple signatures
+-        '[a-zA-Z0-9]+\.Input$': (
++        r'[a-zA-Z0-9]+\.Input$': (
+             False, False, '_write_any_input'),
+ 
+-        '[a-zA-Z0-9]+\.InputConnection$': (
++        r'[a-zA-Z0-9]+\.InputConnection$': (
+             False, False, '_write_any_input_connection'),
+-        '[a-zA-Z0-9\.]+FileName$': (
++        r'[a-zA-Z0-9\.]+FileName$': (
+             True, False, '_write_any_something_file_name'),
+-        '[a-zA-Z0-9\.]+FilePrefix$': (
++        r'[a-zA-Z0-9\.]+FilePrefix$': (
+             True, False, '_write_any_something_file_prefix'),
+         'vtkImageReader2.HeaderSize$': (
+             True, False, '_write_image_reader2_header_size'),
+@@ -1650,6 +1655,11 @@ class WrapperGenerator:
+         'vtkLineIntegralConvolution2D.MaxNoiseValue$': (
+             True, True, '_write_line_integral_conv_2d_max_noise_value'
+         ),
++        # In VTK 9.4, CellGridSidesQuery's Get/OutputDimensionControl is initialized
++        # to some random value this happens mostly on MacOS.
++        'vtkCellGridSidesQuery.OutputDimensionControl$': (
++            True, True, '_write_cell_grid_sides_query_od_control'
++        ),
+         # In VTK 9.3, vtkCylinderSource's GetLatLongTesselation gives random values
+         # https://gitlab.kitware.com/vtk/vtk/-/issues/19252
+         'vtkCylinderSource.LatLongTessellation$': (
+@@ -1827,12 +1837,12 @@ class WrapperGenerator:
+ 
+         default, rng = self.parser.get_get_set_methods()[vtk_attr_name]
+ 
+-        if vtk_major_version >= 8:
+-            message = ("vtkSmartVolumeMapper: "
+-                       "VectorComponent not updatable "
+-                       "(VTK 8.x bug - value not properly initialized)")
+-            print(message)
+-            default = rng[0]
++        # TODO: Still an issue in 9.x?
++        message = ("vtkSmartVolumeMapper: "
++                    "VectorComponent not updatable "
++                    "(VTK 8.x bug - value not properly initialized)")
++        print(message)
++        default = rng[0]
+         t_def = ('traits.Trait({default}, traits.Range{rng}, '
+                  'enter_set=True, auto_set=False)').format(default=default,
+                                                            rng=rng)
+@@ -1848,12 +1858,6 @@ class WrapperGenerator:
+ 
+         default, rng = self.parser.get_get_set_methods()[vtk_attr_name]
+ 
+-        if vtk_major_version == 7:
+-            message = ("vtkSpanSpace: "
+-                       "Resolution not updatable "
+-                       "(VTK 7.x bug - value not properly initialized)")
+-            print(message)
+-            default = rng[0]
+         t_def = ('traits.Trait({default}, traits.Range{rng}, '
+                  'enter_set=True, auto_set=False)').format(default=default,
+                                                            rng=rng)
+@@ -1867,11 +1871,11 @@ class WrapperGenerator:
+             raise RuntimeError("Not sure why you ask for me! "
+                                "I only deal with VertexCells. Panicking.")
+ 
+-        if vtk_major_version >= 8:
+-            message = ("vtkHyperTreeGridCellCenters: "
+-                       "VertexCells not updatable "
+-                       "(VTK 8.x bug - value not properly initialized)")
+-            print(message)
++        # TODO: Still an issue in 9.x?
++        message = ("vtkHyperTreeGridCellCenters: "
++                    "VertexCells not updatable "
++                    "(VTK 8.x bug - value not properly initialized)")
++        print(message)
+ 
+         t_def = 'tvtk_base.true_bool_trait'
+ 
+@@ -1888,12 +1892,13 @@ class WrapperGenerator:
+ 
+         default, rng = self.parser.get_get_set_methods()[vtk_attr_name]
+ 
+-        if vtk_major_version >= 8:
+-            message = ("vtkEuclideanClusterExtraction: "
+-                       "Radius not updatable "
+-                       "(VTK 9.1 bug - value not properly initialized)")
+-            print(message)
+-            default = rng[0]
++        # TODO: Still an issue in 9.x?
++        message = ("vtkEuclideanClusterExtraction: "
++                    "Radius not updatable "
++                    "(VTK 9.1 bug - value not properly initialized)")
++        print(message)
++        default = rng[0]
++
+         t_def = ('traits.Trait({default}, traits.Range{rng}, '
+                  'enter_set=True, auto_set=False)').format(default=default,
+                                                            rng=rng)
+@@ -1923,12 +1928,25 @@ class WrapperGenerator:
+         vtk_set_meth = getattr(klass, 'Set' + vtk_attr_name)
+         self._write_trait(out, name, t_def, vtk_set_meth, mapped=False)
+ 
++    def _write_cell_grid_sides_query_od_control(self, klass, out, vtk_attr_name):
++        if vtk_attr_name != 'OutputDimensionControl':
++            raise RuntimeError(f"Wrong attribute name: {vtk_attr_name}")
++        if vtk_major_version >= 9:
++            message = ("vtkCellGridSidesQuery: "
++                       "OutputDimensionControl not updatable "
++                       "(VTK 9.4 bug - value not properly initialized)")
++            print(message)
++        t_def = 'tvtk_base.true_bool_trait'
++        name = self._reform_name(vtk_attr_name)
++        vtk_set_meth = getattr(klass, 'Set' + vtk_attr_name)
++        self._write_trait(out, name, t_def, vtk_set_meth, mapped=True)
++
+     def _write_cylinder_source_lat_long_tessellation(
+         self, klass, out, vtk_attr_name
+     ):
+         if vtk_attr_name != 'LatLongTessellation':
+             raise RuntimeError(f"Wrong attribute name: {vtk_attr_name}")
+-        if vtk_major_version >= 9:
++        if (vtk_major_version, vtk_minor_version) <= (9, 3):
+             message = ("vtkCylinderSource: "
+                        "LatLongTesselation not updatable "
+                        "(VTK 9.3 bug - value not properly initialized)")
