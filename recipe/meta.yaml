@@ -1,6 +1,6 @@
 {% set version = "4.8.2" %}
 # 309 was our largest number under the multiple build system
-{% set build = 310 %}
+{% set build = 311 %}
 
 package:
   name: mayavi
@@ -52,8 +52,13 @@ requirements:
     - setuptools
 
 test:
+  requires:
+    - pip
+    - pytest
   commands:
     - mayavi2 --help
+    - pytest -v --pyargs mayavi
+    - pytest -v --pyargs tvtk
   imports:
     - tvtk
     - tvtk.array_ext
