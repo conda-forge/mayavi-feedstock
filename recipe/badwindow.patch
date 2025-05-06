@@ -1,3 +1,86 @@
+diff --git a/mayavi/tests/test_builtin_image.py b/mayavi/tests/test_builtin_image.py
+index 0af5a6ec..0ba01507 100644
+--- a/mayavi/tests/test_builtin_image.py
++++ b/mayavi/tests/test_builtin_image.py
+@@ -11,7 +11,6 @@ import unittest
+ from numpy import array
+ 
+ # Enthought library imports.
+-from tvtk.common import vtk_major_version
+ from mayavi.core.null_engine import NullEngine
+ from mayavi.sources.builtin_image import BuiltinImage
+ from mayavi.modules.surface import Surface
+@@ -40,8 +39,6 @@ class TestBuiltinImageSource(unittest.TestCase):
+         image_data.data_source.radius = array([80.,  80.,  80.])
+         image_data.data_source.center = array([150.,  150.,    0.])
+         image_data.data_source.whole_extent = array([10, 245, 10, 245, 0, 0])
+-        if vtk_major_version < 8:
+-            image_data.data_source.set_update_extent_to_whole_extent()
+ 
+         self.e = e
+         self.scene = e.current_scene
+diff --git a/mayavi/tests/test_csv_sniff.py b/mayavi/tests/test_csv_sniff.py
+index 30e2802d..f50a573f 100644
+--- a/mayavi/tests/test_csv_sniff.py
++++ b/mayavi/tests/test_csv_sniff.py
+@@ -12,7 +12,7 @@ import unittest
+ import tempfile
+ from unittest import SkipTest
+ 
+-from numpy import array, ndarray
++from numpy import array, ndarray, isnan
+ 
+ from mayavi.tools.data_wizards.csv_sniff import \
+      Sniff, loadtxt, loadtxt_unknown, array2dict
+@@ -33,8 +33,8 @@ class Util(unittest.TestCase):
+ 
+     def assertClose(self, a, b):
+         if isinstance(a, (int, float)):
+-            if repr(a) == 'nan':
+-                self.assertTrue(repr(b) == 'nan')
++            if isnan(a):
++                self.assertTrue(isnan(b), '%r != %r' % (a ,b))
+             else:
+                 self.assertTrue(abs(a - b) < 1e-6 * max(1, abs(a)),
+                              '%r != %r  %r' % (a, b, abs(a - b)))
+diff --git a/mayavi/tests/test_mlab_source.py b/mayavi/tests/test_mlab_source.py
+index 49c6e87c..ca574e1d 100644
+--- a/mayavi/tests/test_mlab_source.py
++++ b/mayavi/tests/test_mlab_source.py
+@@ -171,7 +171,7 @@ class TestMGlyphSource(unittest.TestCase):
+         self.check_traits()
+         self.check_dataset()
+ 
+-    def test_strange_shape(self):
++    def test_basic_strange_shape(self):
+         " Test the MGlyphSource with strange shapes for the arguments "
+         x, y, z, v, s, src = self.get_data()
+         x = y = z = v = s = 0
+diff --git a/mayavi/tests/test_preferences_mirror.py b/mayavi/tests/test_preferences_mirror.py
+index 1027d43e..71b86797 100644
+--- a/mayavi/tests/test_preferences_mirror.py
++++ b/mayavi/tests/test_preferences_mirror.py
+@@ -3,7 +3,7 @@
+ # License: BSD Style.
+ 
+ import unittest
+-from pkg_resources import resource_filename
++from importlib.resources import files, as_file
+ 
+ from traits.api import Str, Int, Bool
+ from apptools.preferences.api import set_default_preferences
+@@ -25,9 +25,8 @@ class ClassNameTest(unittest.TestCase):
+         """Called before each test is run"""
+         self.preferences = set_default_preferences(Preferences())
+         # The filename of the example preferences file.
+-        pref_file = resource_filename('mayavi.tests',
+-                                      'test_preference.ini')
+-        self.preferences.load(pref_file)
++        with as_file(files('mayavi.tests')/'test_preference.ini') as pref_file:
++            self.preferences.load(str(pref_file))
+         self.pref = _TestPreference()
+         self.mirror = PreferencesMirror()
+         self.mirror.preferences = self.pref
 diff --git a/tvtk/array_handler.py b/tvtk/array_handler.py
 index 6f42b2e8..1e1a1db6 100644
 --- a/tvtk/array_handler.py
@@ -124,6 +207,406 @@ index a11f8472..63f49525 100644
              )
          else:
              return ret
+diff --git a/tvtk/tests/test_array_ext.py b/tvtk/tests/test_array_ext.py
+index cbb03c74..4320267e 100644
+--- a/tvtk/tests/test_array_ext.py
++++ b/tvtk/tests/test_array_ext.py
+@@ -5,12 +5,16 @@
+ # Copyright (c) 2005, Enthought, Inc.
+ # License: BSD Style.
+ 
++import pytest
+ import unittest
+ 
+ import numpy
+ 
+ from tvtk.array_handler import ID_TYPE_CODE, set_id_type_array_py
+-from tvtk.array_ext import set_id_type_array
++try:
++    from tvtk.array_ext import set_id_type_array
++except ModuleNotFoundError:  # not compiled
++    pytest.skip("array_ext not found", allow_module_level=True)
+ 
+ 
+ class TestArrayExt(unittest.TestCase):
+diff --git a/tvtk/tests/test_array_handler.py b/tvtk/tests/test_array_handler.py
+index 556ad048..bc4588de 100644
+--- a/tvtk/tests/test_array_handler.py
++++ b/tvtk/tests/test_array_handler.py
+@@ -29,6 +29,7 @@ def mysum(arr):
+ class TestArrayHandler(unittest.TestCase):
+     def _check_arrays(self, arr, vtk_arr):
+         self.assertEqual(vtk_arr.GetNumberOfTuples(), len(arr))
++        msg = f"\n{vtk_arr}"
+         if len(arr.shape) == 2:
+             dim1 = arr.shape[1]
+             self.assertEqual(vtk_arr.GetNumberOfComponents(), dim1)
+@@ -45,8 +46,7 @@ class TestArrayHandler(unittest.TestCase):
+                     self.assertEqual(chr(int(vtk_arr.GetTuple1(i))), arr[i])
+             else:
+                 for i in range(len(arr)):
+-                    self.assertEqual(vtk_arr.GetTuple1(i), arr[i])
+-
++                    self.assertEqual(vtk_arr.GetTuple1(i), arr[i], msg=msg)
+ 
+     def test_array2vtk(self):
+         """Test Numeric array to VTK array conversion and vice-versa."""
+@@ -63,6 +63,7 @@ class TestArrayHandler(unittest.TestCase):
+         t_z.append(numpy.array([-2147483648, 0, 2147483647], numpy.int32))
+         t_z.append(numpy.array([
+             -9223372036854775808, 0, 9223372036854775807], numpy.int64))
++        assert t_z[-1][0] == -9223372036854775808
+         t_z.append(numpy.array([0, 255], numpy.uint8))
+         t_z.append(numpy.array([0, 65535], numpy.uint16))
+         t_z.append(numpy.array([0, 4294967295], numpy.uint32))
+@@ -160,13 +161,16 @@ class TestArrayHandler(unittest.TestCase):
+         self.assertEqual(vtk_arr.GetValue(2), 0)
+         self.assertEqual(vtk_arr.GetValue(3), 1)
+ 
+-        # Make sure the code at least runs for all the non-complex
+-        # numerical dtypes in numpy.
+-        float_types = [x for x in numpy.sctypes['float']
+-                       if x().dtype.name not in ('float16', 'float128')]
+-        for dtype in (numpy.sctypes['int'] + numpy.sctypes['uint'] +
+-                      float_types):
+-            array_handler.array2vtk(numpy.zeros((1,), dtype=dtype))
++        # Make sure the code at least runs for all
++        # numerical dtypes in numpy
++        # except for half, longdouble and complexfloating
++        int_types = ['byte', 'short', 'int', 'intc', 'int_', 'long', 'longlong']
++        uint_types = ['ubyte', 'ushort', 'uintc', 'uint', 'ulong',
++                      'ulonglong']
++        float_types = ['single', 'double']
++        for dtype in int_types + uint_types + float_types:
++            array_handler.array2vtk(numpy.zeros((1,),
++                                    dtype=numpy.dtype(dtype)))
+ 
+     def test_arr2cell_array(self):
+         """Test Numeric array to vtkCellArray conversion."""
+@@ -201,8 +205,7 @@ class TestArrayHandler(unittest.TestCase):
+         cells = array_handler.array2vtkCellArray(a)
+         arr = array_handler.vtk2array(cells.GetData())
+         expect = numpy.array([3, 0, 1, 2]*3, int)
+-        self.assertEqual(numpy.alltrue(numpy.equal(arr, expect)),
+-                         True)
++        self.assertTrue(numpy.all(numpy.equal(arr, expect)))
+         self.assertEqual(cells.GetNumberOfCells(), N)
+ 
+         # Test if a list of Numeric arrays of different cell lengths works.
+@@ -210,8 +213,7 @@ class TestArrayHandler(unittest.TestCase):
+         cells = array_handler.array2vtkCellArray(l_a)
+         arr = array_handler.vtk2array(cells.GetData())
+         expect = numpy.array([1, 0]*3 + [3, 0, 1, 2]*3 + [2, 0,1]*2, int)
+-        self.assertEqual(numpy.alltrue(numpy.equal(arr, expect)),
+-                         True)
++        self.assertTrue(numpy.all(numpy.equal(arr, expect)))
+         self.assertEqual(cells.GetNumberOfCells(), N*2 + 2)
+ 
+         # This should not take a long while.  This merely tests if a
+diff --git a/tvtk/tests/test_class_tree.py b/tvtk/tests/test_class_tree.py
+index f71e43bf..5d9ad976 100644
+--- a/tvtk/tests/test_class_tree.py
++++ b/tvtk/tests/test_class_tree.py
+@@ -7,7 +7,6 @@ tests if the tree generation works for the builtins module.
+ 
+ """
+ import builtins
+-import sys
+ import unittest
+ from contextlib import contextmanager
+ 
+@@ -19,8 +18,6 @@ import vtk
+ _cache = class_tree.ClassTree(vtk)
+ _cache.create()
+ 
+-vtk_major_version = vtk.vtkVersion.GetVTKMajorVersion()
+-
+ def get_level(klass):
+     """Gets the inheritance level of a given class."""
+     if not klass.__bases__:
+@@ -54,15 +51,7 @@ class TestClassTree(unittest.TestCase):
+         if (hasattr(vtk, 'vtkTuple')):
+             names = [x.name for x in t.tree[0]]
+             names.sort()
+-            if vtk_major_version == 7:
+-                expect = ['object', 'vtkColor3', 'vtkColor4', 'vtkDenseArray',
+-                          'vtkQuaternion', 'vtkRect',
+-                          'vtkSparseArray', 'vtkTuple',
+-                          'vtkTypedArray','vtkVector',
+-                          'vtkVector2', 'vtkVector3']
+-            else:
+-                self.assertGreaterEqual(vtk_major_version, 8)
+-                expect = ['object']
++            expect = ['object']
+             self.assertEqual(names, expect)
+         elif (hasattr(vtk, 'vtkVector')):
+             self.assertEqual(len(t.tree[0]), 11)
+diff --git a/tvtk/tests/test_garbage_collection.py b/tvtk/tests/test_garbage_collection.py
+index 6ab764e5..b995f3ff 100644
+--- a/tvtk/tests/test_garbage_collection.py
++++ b/tvtk/tests/test_garbage_collection.py
+@@ -20,7 +20,7 @@ bad_pyqt5 = False
+ if ETSConfig.toolkit in ('qt4', 'qt'):
+     import pyface
+     from pyface.qt import api_name
+-    if api_name in ('pyqt', 'pyqt5') and \
++    if api_name in ('pyqt', 'pyqt5') and hasattr(pyface, "__version__") and \
+             Version(pyface.__version__) < Version('7.5.0.dev0'):
+         bad_pyqt5 = True
+ 
+diff --git a/tvtk/tests/test_messenger.py b/tvtk/tests/test_messenger.py
+index 66d49795..a92f2344 100644
+--- a/tvtk/tests/test_messenger.py
++++ b/tvtk/tests/test_messenger.py
+@@ -133,12 +133,12 @@ class TestMessenger(unittest.TestCase):
+         # Test if things behave sanely if a message was sent and one
+         # of the callbacks has been gc'd.
+         m = messenger.Messenger()
+-        l1 = len(m._signals[hash(c1)]['foo'])
++        l1 = len(m._signals[id(c1)]['foo'])
+         #
+         del c
+         messenger.send(c1, 'foo')
+         #
+-        l2 = len(m._signals[hash(c1)]['foo'])
++        l2 = len(m._signals[id(c1)]['foo'])
+         # Since 'c' is gc'd this callback should have been cleared
+         # out.
+         self.assertEqual(l2, l1 - 1)
+diff --git a/tvtk/tests/test_tvtk.py b/tvtk/tests/test_tvtk.py
+index 3cba92c5..e2a32013 100644
+--- a/tvtk/tests/test_tvtk.py
++++ b/tvtk/tests/test_tvtk.py
+@@ -8,6 +8,7 @@ make sure that the generated code works well.
+ # Copyright (c) 2004-2020, Enthought, Inc.
+ # License: BSD Style.
+ 
++import os
+ import unittest
+ import pickle
+ import weakref
+@@ -43,6 +44,9 @@ To generate tvtk_classes.zip you must do the following::
+ from tvtk.tvtk_classes import tvtk_helper
+ 
+ 
++on_gha = os.getenv("GITHUB_ACTION", None) is not None
++
++
+ def mysum(arr):
+     val = arr
+     while type(val) == numpy.ndarray:
+@@ -202,22 +206,22 @@ class TestTVTK(unittest.TestCase):
+     def test_object_cache(self):
+         """Test if object cache works."""
+         cs = tvtk.ConeSource()
+-        hash1 = hash(cs)
++        hash1 = id(cs)
+         o = cs.output
+         if hasattr(o, 'producer_port'):
+             src = o.producer_port.producer
+         else:
+             src = cs.executive.algorithm
+         self.assertEqual(src, cs)
+-        self.assertEqual(hash1, hash(src))
++        self.assertEqual(hash1, id(src))
+         del cs, src
+         gc.collect()
+         # The test sometimes fails as VTK seems to generate objects with the
+-        # same memory address and hash, we try to force it to allocate more
+-        # objects so as to not end up reusing the same address and hash.
++        # same memory address and hash/id, we try to force it to allocate more
++        # objects so as to not end up reusing the same address and id.
+         junk = [tvtk.ConeSource() for i in range(50)]
+ 
+-        # Now get another ConeSource and ensure the hash is different.
++        # Now get another ConeSource and ensure the id is different.
+         cs = tvtk.ConeSource()
+         o = cs.output
+         if hasattr(o, 'producer_port'):
+@@ -230,8 +234,8 @@ class TestTVTK(unittest.TestCase):
+         # For VTK 5.x this test is inconsistent, hence skipeed for 5.x
+         # See http://review.source.kitware.com/#/c/15095/
+         ##############################################################
+-        self.assertEqual(hash1 != hash(src), True)
+-        self.assertEqual(hash(cs), hash(src))
++        self.assertEqual(hash1 != id(src), True)
++        self.assertEqual(id(cs), id(src))
+ 
+         # Test for a bug with collections and the object cache.
+         r = tvtk.Renderer()
+@@ -565,7 +569,7 @@ class TestTVTK(unittest.TestCase):
+         s = tvtk.StructuredPoints()
+         x = s.FIELD_ARRAY_TYPE()
+         y = tvtk.Information()
+-        x.get(y)
++        y.get(x)
+ 
+     def test_parent_child_bounds(self):
+         """CubeAxesActor2D's bounds should be writable."""
+@@ -818,14 +822,20 @@ class TestTVTKModule(unittest.TestCase):
+     def test_all_instantiable(self):
+         """Test if all the TVTK classes can be instantiated"""
+         errors = []
++        if on_gha:
++            print("\n::group::Instantiating TVTK classes")
+         for name in self.names:
+             tvtk_name = get_tvtk_name(name)
+             tvtk_klass = getattr(tvtk, tvtk_name, None)
++            if on_gha:
++                print(tvtk_name)
+             try:
+-                obj = tvtk_klass()
++                tvtk_klass()
+             # TypeError: super(type, obj): obj must be an instance or subtype of type
+             except (TraitError, KeyError, TypeError):
+                 errors.append(f"\n{name}:\n{indent(traceback.format_exc(), '  ')}")
++        if on_gha:
++            print("\n::endgroup::")
+         if len(errors) > 0:
+             message = "Not all classes could be instantiated:\n{0}\n"
+             raise AssertionError(message.format(''.join(errors)))
+@@ -855,15 +865,27 @@ class TestTVTKModule(unittest.TestCase):
+             except AttributeError:
+                 return None, None
+ 
++        if on_gha:
++            print("\n::group::TVTK trait ranges")
+         for name in self.names:
+             vtk_klass = getattr(vtk, name)
+             tvtk_klass_name = get_tvtk_name(name)
++            if vtk.vtk_version in ['9.4.0', '9.4.1']:
++                if tvtk_klass_name.endswith('View'):
++                    continue
++                if tvtk_klass_name in ['ImageViewer', 'ImageViewer2',
++                                       'OpenGLRenderWindow',
++                                       'RenderWindow']:
++                    continue
++
++            if on_gha:
++                print(tvtk_klass_name)
+ 
+             try:
+                 obj = getattr(tvtk, tvtk_klass_name)()
+             except Exception:
+                 # testing for instantiation is above
+-                pass
++                continue
+ 
+             for trait_name in obj.editable_traits():
+                 if trait_name in ['_in_set', '_vtk_obj']:
+@@ -882,13 +904,14 @@ class TestTVTKModule(unittest.TestCase):
+                     # tvtk.tvtk_classes.open_gl_cell_grid_render_request.shapes_to_draw
+                     # uses strings
+                     if isinstance(min_value, str):
+-                        name = "tvtk.tvtk_classes.open_gl_cell_grid_render_request"
+-                        assert name in repr(obj), (obj, trait_name)
++                        assert 'cell_grid_render_request' in repr(obj), (obj, trait_name)
+                         continue
+                     with self.assertRaises(TraitError):
+                         setattr(obj, trait_name, (min_value-1, max_value))
+                     with self.assertRaises(TraitError):
+                         setattr(obj, trait_name, (min_value, max_value+1))
++        if on_gha:
++            print("::endgroup::")
+ 
+     def test_no_trait_has_ptr_address_as_value(self):
+         '''Test if none of the TVTK classes' traits has a value of "*_p_void"
+@@ -933,7 +956,7 @@ class TestTVTKModule(unittest.TestCase):
+                 obj = getattr(tvtk, tvtk_klass_name)()
+             except Exception:
+                 # testing for instantiation is above
+-                pass
++                continue
+ 
+             for trait_name in obj._full_traitnames_list_:
+                 try:
+diff --git a/tvtk/tests/test_vtk_parser.py b/tvtk/tests/test_vtk_parser.py
+index c97635f5..ce88ce9e 100644
+--- a/tvtk/tests/test_vtk_parser.py
++++ b/tvtk/tests/test_vtk_parser.py
+@@ -16,6 +16,7 @@ error messages but they are usually harmless.
+ import unittest
+ from tvtk import vtk_parser
+ from tvtk import vtk_module as vtk
++from tvtk.common import vtk_major_version, vtk_minor_version
+ 
+ import time # Only used when timing.
+ import sys  # Only used when debugging.
+@@ -23,8 +24,7 @@ import sys  # Only used when debugging.
+ 
+ # This is a little expensive to create so we cache it.
+ _cache = vtk_parser.VTKMethodParser()
+-vtk_major_version = vtk.vtkVersion.GetVTKMajorVersion()
+-vtk_minor_version = vtk.vtkVersion.GetVTKMinorVersion()
++
+ 
+ class TestVTKParser(unittest.TestCase):
+     def setUp(self):
+@@ -44,13 +44,9 @@ class TestVTKParser(unittest.TestCase):
+         p = self.p
+         # Simple case of a vtkObject.
+         p.parse(vtk.vtkObject())
+-        if vtk_major_version < 9:
+-            self.assertEqual(p.get_toggle_methods(),
+-                             {'Debug': 0, 'GlobalWarningDisplay': 1})
+-        else:
+-            self.assertIn(p.get_toggle_methods(),
+-                          [{'Debug': False, 'GlobalWarningDisplay': 1},
+-                           {'Debug': False, 'GlobalWarningDisplay': 0}])
++        self.assertIn(p.get_toggle_methods(),
++                        [{'Debug': False, 'GlobalWarningDisplay': 1},
++                        {'Debug': False, 'GlobalWarningDisplay': 0}])
+         self.assertEqual(p.get_state_methods(), {})
+         self.assertEqual(p.get_get_methods(), ['GetCommand', 'GetMTime'])
+ 
+@@ -87,8 +83,7 @@ class TestVTKParser(unittest.TestCase):
+                                  ['Gouraud', 1], ['Phong', 2]],
+                'Representation': [['Surface', 2], ['Points', 0],
+                                   ['Surface', 2], ['Wireframe', 1]]}
+-        if vtk_major_version >= 9:
+-            res['Interpolation'].insert(-1, ['PBR', 3])
++        res['Interpolation'].insert(-1, ['PBR', 3])
+ 
+         self.assertEqual(p.get_state_methods(), res)
+         self.assertEqual(p.state_meths, p.get_state_methods())
+@@ -118,15 +113,13 @@ class TestVTKParser(unittest.TestCase):
+                'SpecularPower': (1.0, (0.0, 100.0))}
+         if ('ReferenceCount' not in p.get_get_set_methods()):
+             del res['ReferenceCount']
+-        if vtk_major_version > 7:
+-            res['MaterialName'] = (None, None)
+-            res['VertexColor'] = ((0.5, 1.0, 0.5), None)
+-        if vtk_major_version >= 9:
+-            res['EmissiveFactor'] = ((1.0, 1.0, 1.0), None)
+-            res['Metallic'] = (0., float_max)
+-            res['NormalScale'] = (1., None)
+-            res['OcclusionStrength'] = (1., float_max)
+-            res['Roughness'] = (0.5, float_max)
++        res['MaterialName'] = (None, None)
++        res['VertexColor'] = ((0.5, 1.0, 0.5), None)
++        res['EmissiveFactor'] = ((1.0, 1.0, 1.0), None)
++        res['Metallic'] = (0., float_max)
++        res['NormalScale'] = (1., None)
++        res['OcclusionStrength'] = (1., float_max)
++        res['Roughness'] = (0.5, float_max)
+         if (vtk_major_version, vtk_minor_version) >= (9, 1):
+             res['Anisotropy'] = (0.0, (0.0, 1.0))
+             res['AnisotropyRotation'] = (0.0, (0.0, 1.0))
+@@ -180,12 +173,8 @@ class TestVTKParser(unittest.TestCase):
+             res = ['AddShaderVariable', 'BackfaceRender', 'DeepCopy',
+                    'ReleaseGraphicsResources', 'RemoveAllTextures',
+                    'RemoveTexture', 'Render']
+-            if (vtk_major_version >= 7 or vtk_minor_version >= 2) and \
+-                    vtk_major_version < 9:
+-                res.append('VTKTextureUnit')
+-            if vtk_major_version == 9:
+-                res.extend(['SetBaseColorTexture', 'SetEmissiveTexture',
+-                            'SetNormalTexture', 'SetORMTexture'])
++            res.extend(['SetBaseColorTexture', 'SetEmissiveTexture',
++                        'SetNormalTexture', 'SetORMTexture'])
+             if vtk_major_version == 9 and vtk_minor_version > 0:
+                 res.extend([
+                     'ComputeIORFromReflectance', 'ComputeReflectanceFromIOR',
 diff --git a/tvtk/vtk_module.py b/tvtk/vtk_module.py
 index 69dad0eb..a9b13194 100644
 --- a/tvtk/vtk_module.py
