@@ -1,10 +1,98 @@
+diff --git a/mayavi/components/actor.py b/mayavi/components/actor.py
+index 97bc0632..6fc43c8f 100644
+--- a/mayavi/components/actor.py
++++ b/mayavi/components/actor.py
+@@ -115,14 +115,7 @@ class Actor(Component):
+         sends a `data_changed` event.
+         """
+         # Invoke render to update any changes.
+-        from mayavi.modules.outline import Outline
+-        from mayavi.components.glyph import Glyph
+-        #FIXME: A bad hack, but without these checks results in seg fault
+-        input = self.inputs[0]
+-        if isinstance(input, Outline) or isinstance(input, Glyph):
+-            self.mapper.update(0)
+-        else:
+-            self.mapper.update()
++        self.mapper.update()
+         self.render()
+
+     ######################################################################
+diff --git a/mayavi/components/ui/actor.py b/mayavi/components/ui/actor.py
+index d5838674..7f0c6899 100644
+--- a/mayavi/components/ui/actor.py
++++ b/mayavi/components/ui/actor.py
+@@ -14,8 +14,6 @@ importing.
+
+ from traitsui.api import (View, Group, Item, InstanceEditor,
+                           DropEditor, Tabbed)
+-from tvtk.api import tvtk
+-from tvtk.common import vtk_major_version
+
+ # The properties view group.
+ _prop_base_group = Group(Item(name='representation'),
+@@ -48,16 +46,10 @@ _mapper_group = Group(
+ )
+
+ # The Texture's view group
+-if vtk_major_version > 7:
+-    _texture_group = Group(Item(name='interpolate'),
+-                           Item(name='color_mode'),
+-                           Item(name='repeat'),
+-                           show_border=True)
+-else:
+-    _texture_group = Group(Item(name='interpolate'),
+-                           Item(name='map_color_scalars_through_lookup_table'),
+-                           Item(name='repeat'),
+-                           show_border=True)
++_texture_group = Group(Item(name='interpolate'),
++                         Item(name='color_mode'),
++                         Item(name='repeat'),
++                         show_border=True)
+
+ # The Actor's view group.
+ _actor_base_group = Group(Item(name='visibility'))
+diff --git a/mayavi/preferences/preference_manager.py b/mayavi/preferences/preference_manager.py
+index efe68ef9..bf27a046 100644
+--- a/mayavi/preferences/preference_manager.py
++++ b/mayavi/preferences/preference_manager.py
+@@ -21,7 +21,7 @@ package).
+
+ # Standard library imports
+ from os.path import join
+-import pkg_resources
++import importlib.resources
+
+ # Enthought library imports.
+ from traits.etsconfig.api import ETSConfig
+@@ -106,12 +106,11 @@ class PreferenceManager(HasTraits):
+             for pkg in ('mayavi.preferences',
+                         'tvtk.plugins.scene'):
+                 pref = 'preferences.ini'
+-                pref_file = pkg_resources.resource_stream(pkg, pref)
+-
++                pref_file = importlib.resources.files(pkg).joinpath(pref)
+                 preferences = self.preferences
+                 default = preferences.node('default/')
+-                default.load(pref_file)
+-                pref_file.close()
++                with open(pref_file, 'rb') as fid:
++                    default.load(fid)
+         finally:
+             # Set back the application home.
+             ETSConfig.application_home = app_home
+@@ -126,4 +125,3 @@ class PreferenceManager(HasTraits):
+ # A Global preference manager that all other modules can use.
+
+ preference_manager = PreferenceManager()
+-
 diff --git a/mayavi/tests/test_builtin_image.py b/mayavi/tests/test_builtin_image.py
 index 0af5a6ec..0ba01507 100644
 --- a/mayavi/tests/test_builtin_image.py
 +++ b/mayavi/tests/test_builtin_image.py
 @@ -11,7 +11,6 @@ import unittest
  from numpy import array
- 
+
  # Enthought library imports.
 -from tvtk.common import vtk_major_version
  from mayavi.core.null_engine import NullEngine
@@ -16,7 +104,7 @@ index 0af5a6ec..0ba01507 100644
          image_data.data_source.whole_extent = array([10, 245, 10, 245, 0, 0])
 -        if vtk_major_version < 8:
 -            image_data.data_source.set_update_extent_to_whole_extent()
- 
+
          self.e = e
          self.scene = e.current_scene
 diff --git a/mayavi/tests/test_csv_sniff.py b/mayavi/tests/test_csv_sniff.py
@@ -26,14 +114,14 @@ index 30e2802d..f50a573f 100644
 @@ -12,7 +12,7 @@ import unittest
  import tempfile
  from unittest import SkipTest
- 
+
 -from numpy import array, ndarray
 +from numpy import array, ndarray, isnan
- 
+
  from mayavi.tools.data_wizards.csv_sniff import \
       Sniff, loadtxt, loadtxt_unknown, array2dict
 @@ -33,8 +33,8 @@ class Util(unittest.TestCase):
- 
+
      def assertClose(self, a, b):
          if isinstance(a, (int, float)):
 -            if repr(a) == 'nan':
@@ -50,7 +138,7 @@ index 49c6e87c..ca574e1d 100644
 @@ -171,7 +171,7 @@ class TestMGlyphSource(unittest.TestCase):
          self.check_traits()
          self.check_dataset()
- 
+
 -    def test_strange_shape(self):
 +    def test_basic_strange_shape(self):
          " Test the MGlyphSource with strange shapes for the arguments "
@@ -62,11 +150,11 @@ index 1027d43e..71b86797 100644
 +++ b/mayavi/tests/test_preferences_mirror.py
 @@ -3,7 +3,7 @@
  # License: BSD Style.
- 
+
  import unittest
 -from pkg_resources import resource_filename
 +from importlib.resources import files, as_file
- 
+
  from traits.api import Str, Int, Bool
  from apptools.preferences.api import set_default_preferences
 @@ -25,9 +25,8 @@ class ClassNameTest(unittest.TestCase):
@@ -81,6 +169,122 @@ index 1027d43e..71b86797 100644
          self.pref = _TestPreference()
          self.mirror = PreferencesMirror()
          self.mirror.preferences = self.pref
+diff --git a/mayavi/tools/data_wizards/loadtxt.py b/mayavi/tools/data_wizards/loadtxt.py
+index 80702b0e..b4677dee 100644
+--- a/mayavi/tools/data_wizards/loadtxt.py
++++ b/mayavi/tools/data_wizards/loadtxt.py
+@@ -23,7 +23,7 @@ def _getconv(dtype):
+         return lambda x: int(float(x))
+     elif issubclass(typ, np.floating):
+         return float
+-    elif issubclass(typ, np.complex_):
++    elif issubclass(typ, np.complexfloating):
+         return complex
+     else:
+         return str
+diff --git a/mayavi/tools/figure.py b/mayavi/tools/figure.py
+index a196f1fd..8890b470 100644
+--- a/mayavi/tools/figure.py
++++ b/mayavi/tools/figure.py
+@@ -19,7 +19,6 @@ from pyface.timer.api import do_later
+
+ #  imports
+ from tvtk.api import tvtk
+-from tvtk.common import vtk_major_version
+ from mayavi.core.scene import Scene
+ from mayavi.core.registry import registry
+ from .camera import view
+@@ -313,19 +312,13 @@ def screenshot(figure=None, mode='rgb', antialiased=False):
+         out = tvtk.UnsignedCharArray()
+         shape = (y, x, 3)
+         pixel_getter = figure.scene.render_window.get_pixel_data
+-        if vtk_major_version > 7:
+-            pg_args = (0, 0, x - 1, y - 1, 1, out, 0)
+-        else:
+-            pg_args = (0, 0, x - 1, y - 1, 1, out)
++        pg_args = (0, 0, x - 1, y - 1, 1, out, 0)
+
+     elif mode == 'rgba':
+         out = tvtk.FloatArray()
+         shape = (y, x, 4)
+         pixel_getter = figure.scene.render_window.get_rgba_pixel_data
+-        if vtk_major_version > 7:
+-            pg_args = (0, 0, x - 1, y - 1, 1, out, 0)
+-        else:
+-            pg_args = (0, 0, x - 1, y - 1, 1, out)
++        pg_args = (0, 0, x - 1, y - 1, 1, out, 0)
+
+     else:
+         raise ValueError('mode type not understood')
+diff --git a/mayavi/tools/remote/remote_widget.py b/mayavi/tools/remote/remote_widget.py
+index ea649832..21392891 100644
+--- a/mayavi/tools/remote/remote_widget.py
++++ b/mayavi/tools/remote/remote_widget.py
+@@ -1,4 +1,4 @@
+-import imghdr
++import puremagic
+
+
+ class RemoteWidget(object):
+@@ -50,7 +50,7 @@ class RemoteWidget(object):
+
+     def _update_image(self):
+         data = self.scene_proxy.get_raw_image()
+-        format = imghdr.what('', h=data)
++        format = puremagic.what('', h=data)
+         self.show_image(data, format=format.upper())
+
+     # ##### VTK Event handling ##########
+diff --git a/pyproject.toml b/pyproject.toml
+index 8f5049a4..d6cad3fe 100644
+--- a/pyproject.toml
++++ b/pyproject.toml
+@@ -1,7 +1,7 @@
+ [build-system]
+ requires = [
+-    "oldest-supported-numpy",
++    "numpy>=2.0.0rc2,<3",
+     "setuptools",
+-    "vtk",
++    "vtk>=9",
+     "wheel"
+ ]
+diff --git a/setup.cfg b/setup.cfg
+index 212a94ac..699717f8 100644
+--- a/setup.cfg
++++ b/setup.cfg
+@@ -4,5 +4,7 @@ addopts =
+ filterwarnings =
+     # Currently unsatisfiable
+     ignore:Workbench will be moved from pyface:PendingDeprecationWarning
++    # Should be fixed in traits
++    ignore: module 'sre_.+' is deprecated:DeprecationWarning
+     # We call deprecated methods and classes in our tests, and there are many variants for how the parentheticals are formatted
+     ignore:Call to deprecated .*. \((This|Use|Please|Deprecated|Deprecating|Removed|Part|no|renamed) .*\) -- Deprecated since version.*:DeprecationWarning
+diff --git a/setup.py b/setup.py
+index 82e7ba42..6f978b4c 100644
+--- a/setup.py
++++ b/setup.py
+@@ -130,8 +130,8 @@ class GenDocs(Command):
+         mlab_ref_dir = join(DEFAULT_INPUT_DIR, 'mayavi', 'auto')
+
+         source_path = join('examples', 'mayavi')
+-        sources = '(\.py)|(\.rst)$'
+-        excluded_dirs = '^\.'
++        sources = r'(\.py)|(\.rst)$'
++        excluded_dirs = r'^\.'
+         target_path = mlab_ref_dir
+         target_time = self.latest_modified(target_path,
+                                            ignore_dirs=excluded_dirs)[0]
+@@ -325,7 +325,7 @@ if __name__ == '__main__':
+         author="Prabhu Ramachandran, et al.",
+         author_email="prabhu@aero.iitb.ac.in",
+         maintainer='ETS Developers',
+-        python_requires='>=3.8',
++        python_requires='>=3.9',
+         maintainer_email='mayavi-users@lists.sf.net',
+         url='http://docs.enthought.com/mayavi/mayavi/',
+         classifiers=[c.strip() for c in """\
 diff --git a/tvtk/array_handler.py b/tvtk/array_handler.py
 index 6f42b2e8..1e1a1db6 100644
 --- a/tvtk/array_handler.py
@@ -94,7 +298,7 @@ index 6f42b2e8..1e1a1db6 100644
          if t not in _arr_vtk:
 -            _arr_vtk[t] = _extra[t]
 +            _arr_vtk[t] = val
- 
+
      try:
          return _arr_vtk[numeric_array_type]
 diff --git a/tvtk/code_gen.py b/tvtk/code_gen.py
@@ -103,15 +307,15 @@ index 8ad3ab6a..54aa7248 100644
 +++ b/tvtk/code_gen.py
 @@ -1,13 +1,18 @@
  """This module generates tvtk (Traited VTK) classes from the VTK-Python API.
- 
+
 -This can be evoked for example by:
 +This can be evoked for example by running from the ``mayavi`` root:
- 
+
  ..code-block:: console
- 
+
 -    $ python -ic "from tvtk.code_gen import main; main()" -szv
 +    $ VTK_PARSER_VERBOSE=1 VTK_PARSER_GC=1 python -m tvtk.code_gen -szvno $PWD/tvtk
- 
+
  On failures you can then for example do ``import pdb; pdb.pm()`` to do
 -post-mortem debugging.
 +post-mortem debugging. If there are segfaults, the VTK_PARSER_VERBOSE=1 should help
@@ -126,7 +330,7 @@ index 8ad3ab6a..54aa7248 100644
 @@ -107,7 +112,7 @@ class TVTKGenerator:
              # Write the wrapper files.
              tree = wrap_gen.get_tree().tree
- 
+
 -            classes = []
 +            classes = ['vtkObjectBase']
              # This is another class we should not wrap and exists
@@ -153,16 +357,16 @@ index bad08ce2..0b6a618d 100644
 +++ b/tvtk/common.py
 @@ -5,7 +5,6 @@
  # License: BSD Style.
- 
+
  from contextlib import contextmanager
 -import string
  import re
  import vtk
- 
+
 @@ -67,10 +66,6 @@ def _sanitize_name(name):
      return name
- 
- 
+
+
 -def is_version_9():
 -    return vtk_major_version > 8
 -
@@ -175,7 +379,7 @@ index a11f8472..63f49525 100644
 --- a/tvtk/messenger.py
 +++ b/tvtk/messenger.py
 @@ -145,7 +145,7 @@ class Messenger:
- 
+
          """
          typ = type(callback)
 -        key = hash(obj)
@@ -194,7 +398,7 @@ index a11f8472..63f49525 100644
          if callback is None:
 @@ -282,11 +282,11 @@ class Messenger:
          object.
- 
+
          """
 -        ret = self._signals.get(hash(obj))
 +        ret = self._signals.get(id(obj))
@@ -207,6 +411,28 @@ index a11f8472..63f49525 100644
              )
          else:
              return ret
+diff --git a/tvtk/pipeline/browser.py b/tvtk/pipeline/browser.py
+index d2afb5b4..5c8c8a42 100644
+--- a/tvtk/pipeline/browser.py
++++ b/tvtk/pipeline/browser.py
+@@ -447,7 +447,7 @@ class TVTKLeafNode(TreeNodeObject):
+     __ = Python
+
+     def __hash__(self):
+-        return hash(tvtk.to_vtk(self.object))
++        return id(tvtk.to_vtk(self.object))
+
+     def _get_name(self):
+         return self.object.__class__.__name__
+@@ -496,7 +496,7 @@ class TVTKBranchNode(TreeNodeObject):
+             pass
+
+     def __hash__(self):
+-        return hash(tvtk.to_vtk(self.object))
++        return id(tvtk.to_vtk(self.object))
+
+     def _get_children_from_cache(self):
+         return [x for x in self.children_cache.values() if x is not None]
 diff --git a/tvtk/tests/test_array_ext.py b/tvtk/tests/test_array_ext.py
 index cbb03c74..4320267e 100644
 --- a/tvtk/tests/test_array_ext.py
@@ -214,20 +440,20 @@ index cbb03c74..4320267e 100644
 @@ -5,12 +5,16 @@
  # Copyright (c) 2005, Enthought, Inc.
  # License: BSD Style.
- 
+
 +import pytest
  import unittest
- 
+
  import numpy
- 
+
  from tvtk.array_handler import ID_TYPE_CODE, set_id_type_array_py
 -from tvtk.array_ext import set_id_type_array
 +try:
 +    from tvtk.array_ext import set_id_type_array
 +except ModuleNotFoundError:  # not compiled
 +    pytest.skip("array_ext not found", allow_module_level=True)
- 
- 
+
+
  class TestArrayExt(unittest.TestCase):
 diff --git a/tvtk/tests/test_array_handler.py b/tvtk/tests/test_array_handler.py
 index 556ad048..bc4588de 100644
@@ -248,7 +474,7 @@ index 556ad048..bc4588de 100644
 -                    self.assertEqual(vtk_arr.GetTuple1(i), arr[i])
 -
 +                    self.assertEqual(vtk_arr.GetTuple1(i), arr[i], msg=msg)
- 
+
      def test_array2vtk(self):
          """Test Numeric array to VTK array conversion and vice-versa."""
 @@ -63,6 +63,7 @@ class TestArrayHandler(unittest.TestCase):
@@ -262,7 +488,7 @@ index 556ad048..bc4588de 100644
 @@ -160,13 +161,16 @@ class TestArrayHandler(unittest.TestCase):
          self.assertEqual(vtk_arr.GetValue(2), 0)
          self.assertEqual(vtk_arr.GetValue(3), 1)
- 
+
 -        # Make sure the code at least runs for all the non-complex
 -        # numerical dtypes in numpy.
 -        float_types = [x for x in numpy.sctypes['float']
@@ -280,7 +506,7 @@ index 556ad048..bc4588de 100644
 +        for dtype in int_types + uint_types + float_types:
 +            array_handler.array2vtk(numpy.zeros((1,),
 +                                    dtype=numpy.dtype(dtype)))
- 
+
      def test_arr2cell_array(self):
          """Test Numeric array to vtkCellArray conversion."""
 @@ -201,8 +205,7 @@ class TestArrayHandler(unittest.TestCase):
@@ -291,7 +517,7 @@ index 556ad048..bc4588de 100644
 -                         True)
 +        self.assertTrue(numpy.all(numpy.equal(arr, expect)))
          self.assertEqual(cells.GetNumberOfCells(), N)
- 
+
          # Test if a list of Numeric arrays of different cell lengths works.
 @@ -210,8 +213,7 @@ class TestArrayHandler(unittest.TestCase):
          cells = array_handler.array2vtkCellArray(l_a)
@@ -301,24 +527,24 @@ index 556ad048..bc4588de 100644
 -                         True)
 +        self.assertTrue(numpy.all(numpy.equal(arr, expect)))
          self.assertEqual(cells.GetNumberOfCells(), N*2 + 2)
- 
+
          # This should not take a long while.  This merely tests if a
 diff --git a/tvtk/tests/test_class_tree.py b/tvtk/tests/test_class_tree.py
 index f71e43bf..5d9ad976 100644
 --- a/tvtk/tests/test_class_tree.py
 +++ b/tvtk/tests/test_class_tree.py
 @@ -7,7 +7,6 @@ tests if the tree generation works for the builtins module.
- 
+
  """
  import builtins
 -import sys
  import unittest
  from contextlib import contextmanager
- 
+
 @@ -19,8 +18,6 @@ import vtk
  _cache = class_tree.ClassTree(vtk)
  _cache.create()
- 
+
 -vtk_major_version = vtk.vtkVersion.GetVTKMajorVersion()
 -
  def get_level(klass):
@@ -353,7 +579,7 @@ index 6ab764e5..b995f3ff 100644
 +    if api_name in ('pyqt', 'pyqt5') and hasattr(pyface, "__version__") and \
              Version(pyface.__version__) < Version('7.5.0.dev0'):
          bad_pyqt5 = True
- 
+
 diff --git a/tvtk/tests/test_messenger.py b/tvtk/tests/test_messenger.py
 index 66d49795..a92f2344 100644
 --- a/tvtk/tests/test_messenger.py
@@ -380,15 +606,15 @@ index 3cba92c5..e2a32013 100644
 @@ -8,6 +8,7 @@ make sure that the generated code works well.
  # Copyright (c) 2004-2020, Enthought, Inc.
  # License: BSD Style.
- 
+
 +import os
  import unittest
  import pickle
  import weakref
 @@ -43,6 +44,9 @@ To generate tvtk_classes.zip you must do the following::
  from tvtk.tvtk_classes import tvtk_helper
- 
- 
+
+
 +on_gha = os.getenv("GITHUB_ACTION", None) is not None
 +
 +
@@ -417,7 +643,7 @@ index 3cba92c5..e2a32013 100644
 +        # same memory address and hash/id, we try to force it to allocate more
 +        # objects so as to not end up reusing the same address and id.
          junk = [tvtk.ConeSource() for i in range(50)]
- 
+
 -        # Now get another ConeSource and ensure the hash is different.
 +        # Now get another ConeSource and ensure the id is different.
          cs = tvtk.ConeSource()
@@ -431,7 +657,7 @@ index 3cba92c5..e2a32013 100644
 -        self.assertEqual(hash(cs), hash(src))
 +        self.assertEqual(hash1 != id(src), True)
 +        self.assertEqual(id(cs), id(src))
- 
+
          # Test for a bug with collections and the object cache.
          r = tvtk.Renderer()
 @@ -565,7 +569,7 @@ class TestTVTK(unittest.TestCase):
@@ -440,7 +666,7 @@ index 3cba92c5..e2a32013 100644
          y = tvtk.Information()
 -        x.get(y)
 +        y.get(x)
- 
+
      def test_parent_child_bounds(self):
          """CubeAxesActor2D's bounds should be writable."""
 @@ -818,14 +822,20 @@ class TestTVTKModule(unittest.TestCase):
@@ -468,7 +694,7 @@ index 3cba92c5..e2a32013 100644
 @@ -855,15 +865,27 @@ class TestTVTKModule(unittest.TestCase):
              except AttributeError:
                  return None, None
- 
+
 +        if on_gha:
 +            print("\n::group::TVTK trait ranges")
          for name in self.names:
@@ -484,14 +710,14 @@ index 3cba92c5..e2a32013 100644
 +
 +            if on_gha:
 +                print(tvtk_klass_name)
- 
+
              try:
                  obj = getattr(tvtk, tvtk_klass_name)()
              except Exception:
                  # testing for instantiation is above
 -                pass
 +                continue
- 
+
              for trait_name in obj.editable_traits():
                  if trait_name in ['_in_set', '_vtk_obj']:
 @@ -882,13 +904,14 @@ class TestTVTKModule(unittest.TestCase):
@@ -508,7 +734,7 @@ index 3cba92c5..e2a32013 100644
                          setattr(obj, trait_name, (min_value, max_value+1))
 +        if on_gha:
 +            print("::endgroup::")
- 
+
      def test_no_trait_has_ptr_address_as_value(self):
          '''Test if none of the TVTK classes' traits has a value of "*_p_void"
 @@ -933,7 +956,7 @@ class TestTVTKModule(unittest.TestCase):
@@ -517,7 +743,7 @@ index 3cba92c5..e2a32013 100644
                  # testing for instantiation is above
 -                pass
 +                continue
- 
+
              for trait_name in obj._full_traitnames_list_:
                  try:
 diff --git a/tvtk/tests/test_vtk_parser.py b/tvtk/tests/test_vtk_parser.py
@@ -529,17 +755,17 @@ index c97635f5..ce88ce9e 100644
  from tvtk import vtk_parser
  from tvtk import vtk_module as vtk
 +from tvtk.common import vtk_major_version, vtk_minor_version
- 
+
  import time # Only used when timing.
  import sys  # Only used when debugging.
 @@ -23,8 +24,7 @@ import sys  # Only used when debugging.
- 
+
  # This is a little expensive to create so we cache it.
  _cache = vtk_parser.VTKMethodParser()
 -vtk_major_version = vtk.vtkVersion.GetVTKMajorVersion()
 -vtk_minor_version = vtk.vtkVersion.GetVTKMinorVersion()
 +
- 
+
  class TestVTKParser(unittest.TestCase):
      def setUp(self):
 @@ -44,13 +44,9 @@ class TestVTKParser(unittest.TestCase):
@@ -558,7 +784,7 @@ index c97635f5..ce88ce9e 100644
 +                        {'Debug': False, 'GlobalWarningDisplay': 0}])
          self.assertEqual(p.get_state_methods(), {})
          self.assertEqual(p.get_get_methods(), ['GetCommand', 'GetMTime'])
- 
+
 @@ -87,8 +83,7 @@ class TestVTKParser(unittest.TestCase):
                                   ['Gouraud', 1], ['Phong', 2]],
                 'Representation': [['Surface', 2], ['Points', 0],
@@ -566,7 +792,7 @@ index c97635f5..ce88ce9e 100644
 -        if vtk_major_version >= 9:
 -            res['Interpolation'].insert(-1, ['PBR', 3])
 +        res['Interpolation'].insert(-1, ['PBR', 3])
- 
+
          self.assertEqual(p.get_state_methods(), res)
          self.assertEqual(p.state_meths, p.get_state_methods())
 @@ -118,15 +113,13 @@ class TestVTKParser(unittest.TestCase):
@@ -639,20 +865,20 @@ index 031af8f3..d3e108b0 100644
 +++ b/tvtk/vtk_parser.py
 @@ -7,14 +7,14 @@ type information, and organizes them.
  # License: BSD Style.
- 
+
  import collections.abc
 +import gc
  import re
 -import types
  import os
- 
+
  # Local imports (these are relative imports for a good reason).
  from . import class_tree
  from . import vtk_module as vtk
 -from .common import is_version_9
 +from .common import vtk_major_version, vtk_minor_version
- 
- 
+
+
  class VTKMethodParser:
 @@ -116,6 +116,8 @@ class VTKMethodParser:
          self._state_patn = re.compile('To[A-Z0-9]')
@@ -661,7 +887,7 @@ index 031af8f3..d3e108b0 100644
 +        self._gc = \
 +            os.getenv('VTK_PARSER_GC', '').lower() in ('1', 'true')
          self._initialize()
- 
+
      #################################################################
 @@ -632,18 +634,6 @@ class VTKMethodParser:
                  # vtkProp.Get/SetAllocatedRenderTime is private and
@@ -683,7 +909,7 @@ index 031af8f3..d3e108b0 100644
                    method[3:] == 'Interactor'):
                  continue
 @@ -668,54 +658,46 @@ class VTKMethodParser:
- 
+
          # Find the default and range of the values.
          if gsm:
 -            if self._verbose:
@@ -758,7 +984,7 @@ index 031af8f3..d3e108b0 100644
 +                            default = getattr(obj, f"Get{key}")()
                          except TypeError:
                              default = None
- 
+
                      # If we don't turn these into integers, they won't instantiate
 -                    if is_version_9():
 +                    if vtk_major_version == 9:
@@ -767,7 +993,7 @@ index 031af8f3..d3e108b0 100644
                                  "AxisOnOrigin", "Use2DMode", "UseTextActor3D",
 @@ -729,18 +711,20 @@ class VTKMethodParser:
                                  default = int(bool(default))
- 
+
                      if value:
 +                        if self._verbose:
 +                            print(f"  Calling {klass_name}.Get{key}MinValue()")
@@ -795,15 +1021,15 @@ index 031af8f3..d3e108b0 100644
 @@ -765,7 +749,7 @@ class VTKMethodParser:
                  meths.remove(method)
          return meths
- 
+
 -    def _get_instance(self, klass):
 +    def _get_instance(self, klass, *, do_print=True):
          """Given a VTK class, `klass`, returns an instance of the
          class.
- 
+
 @@ -774,6 +758,8 @@ class VTKMethodParser:
          the 'state' methods and the ranges for the Get/Set methods.
- 
+
          """
 +        if self._verbose and do_print:
 +            print(f'Instantiating {klass}')
@@ -825,13 +1051,13 @@ index 95b9810e..1c3cb0d2 100644
 --- a/tvtk/wrapper_gen.py
 +++ b/tvtk/wrapper_gen.py
 @@ -17,7 +17,8 @@ from itertools import chain
- 
+
  # Local imports (these are relative imports because the package is not
  # installed when these modules are imported).
 -from .common import get_tvtk_name, camel2enthought, vtk_major_version, _sanitize_name
 +from .common import get_tvtk_name, camel2enthought, _sanitize_name
 +from .common import vtk_major_version, vtk_minor_version
- 
+
  from . import vtk_parser
  from . import indenter
 @@ -54,7 +55,7 @@ def get_trait_def(value, **kwargs):
@@ -845,7 +1071,7 @@ index 95b9810e..1c3cb0d2 100644
      >>> get_trait_def(u'something', enter_set=True, auto_set=False)
 @@ -80,7 +81,7 @@ def get_trait_def(value, **kwargs):
          return 'traits.String', '{!r}'.format(value), kwargs_code
- 
+
      elif type_ in (tuple, list):
 -        shape = (len(value),)
 +        shape = (None,)
@@ -853,7 +1079,7 @@ index 95b9810e..1c3cb0d2 100644
          dtype = dtypes.pop().__name__ if len(dtypes) == 1 else None
          if dtype == 'int' and sys.platform.startswith('win'):
 @@ -679,6 +680,10 @@ class WrapperGenerator:
- 
+
              if not vtk_val:
                  default = self._reform_name(meths[m][0][0])
 +                # Weirdness on NumPy 2.1 and vtk >= 9.3 that this does not show up as
@@ -876,12 +1102,12 @@ index 95b9810e..1c3cb0d2 100644
 -        '[a-zA-Z0-9]+\.ScalarType$': (
 +        r'[a-zA-Z0-9]+\.ScalarType$': (
              False, False, '_write_any_scalar_type'),
- 
+
          # In VTK > 4.5, Set/GetInput have multiple signatures
 -        '[a-zA-Z0-9]+\.Input$': (
 +        r'[a-zA-Z0-9]+\.Input$': (
              False, False, '_write_any_input'),
- 
+
 -        '[a-zA-Z0-9]+\.InputConnection$': (
 +        r'[a-zA-Z0-9]+\.InputConnection$': (
              False, False, '_write_any_input_connection'),
@@ -906,9 +1132,9 @@ index 95b9810e..1c3cb0d2 100644
          # https://gitlab.kitware.com/vtk/vtk/-/issues/19252
          'vtkCylinderSource.LatLongTessellation$': (
 @@ -1827,12 +1837,12 @@ class WrapperGenerator:
- 
+
          default, rng = self.parser.get_get_set_methods()[vtk_attr_name]
- 
+
 -        if vtk_major_version >= 8:
 -            message = ("vtkSmartVolumeMapper: "
 -                       "VectorComponent not updatable "
@@ -925,9 +1151,9 @@ index 95b9810e..1c3cb0d2 100644
                   'enter_set=True, auto_set=False)').format(default=default,
                                                             rng=rng)
 @@ -1848,12 +1858,6 @@ class WrapperGenerator:
- 
+
          default, rng = self.parser.get_get_set_methods()[vtk_attr_name]
- 
+
 -        if vtk_major_version == 7:
 -            message = ("vtkSpanSpace: "
 -                       "Resolution not updatable "
@@ -940,7 +1166,7 @@ index 95b9810e..1c3cb0d2 100644
 @@ -1867,11 +1871,11 @@ class WrapperGenerator:
              raise RuntimeError("Not sure why you ask for me! "
                                 "I only deal with VertexCells. Panicking.")
- 
+
 -        if vtk_major_version >= 8:
 -            message = ("vtkHyperTreeGridCellCenters: "
 -                       "VertexCells not updatable "
@@ -951,13 +1177,13 @@ index 95b9810e..1c3cb0d2 100644
 +                    "VertexCells not updatable "
 +                    "(VTK 8.x bug - value not properly initialized)")
 +        print(message)
- 
+
          t_def = 'tvtk_base.true_bool_trait'
- 
+
 @@ -1888,12 +1892,13 @@ class WrapperGenerator:
- 
+
          default, rng = self.parser.get_get_set_methods()[vtk_attr_name]
- 
+
 -        if vtk_major_version >= 8:
 -            message = ("vtkEuclideanClusterExtraction: "
 -                       "Radius not updatable "
@@ -977,7 +1203,7 @@ index 95b9810e..1c3cb0d2 100644
 @@ -1923,12 +1928,25 @@ class WrapperGenerator:
          vtk_set_meth = getattr(klass, 'Set' + vtk_attr_name)
          self._write_trait(out, name, t_def, vtk_set_meth, mapped=False)
- 
+
 +    def _write_cell_grid_sides_query_od_control(self, klass, out, vtk_attr_name):
 +        if vtk_attr_name != 'OutputDimensionControl':
 +            raise RuntimeError(f"Wrong attribute name: {vtk_attr_name}")
