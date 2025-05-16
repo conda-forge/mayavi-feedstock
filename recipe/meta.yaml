@@ -1,6 +1,6 @@
-{% set version = "4.8.2" %}
+{% set version = "4.8.3" %}
 # 309 was our largest number under the multiple build system
-{% set build = 310 %}
+{% set build = 0 %}
 
 package:
   name: mayavi
@@ -9,7 +9,7 @@ package:
 source:
   fn: mayavi-{{ version }}.tar.gz
   url: https://github.com/enthought/mayavi/archive/{{ version }}.tar.gz
-  sha256: a78eb7512948d9484c0ba7b1fdeab088f9f4a32ca32862a0b8e8d2b63ad83eb2
+  sha256: eb7f46952d4786008ed4f272172bec475fcdcb988f5e1c5405daea9d41955cef
   patches:
     # Using Cython 3.0.10 and NumPy 2.0 installed rather than Cython 3.0.8
     - cython.patch
