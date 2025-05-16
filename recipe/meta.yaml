@@ -60,8 +60,10 @@ test:
     - pytest
   commands:
     - mayavi2 --help
-    - pytest -v --pyargs mayavi
-    - pytest -v --pyargs tvtk
+    - xvfb-run pytest -v --pyargs mayavi  # [build_variant != "noqt" and linux]
+    - pytest -v --pyargs mayavi  # [not linux]
+    - xvfb-run pytest -v --pyargs tvtk  # [build_variant != "noqt" and linux]
+    - pytest -v --pyargs tvtk  # [not linux]
   imports:
     - tvtk
     - tvtk.array_ext
