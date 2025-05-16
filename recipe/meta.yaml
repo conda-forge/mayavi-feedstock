@@ -10,11 +10,6 @@ source:
   fn: mayavi-{{ version }}.tar.gz
   url: https://github.com/enthought/mayavi/archive/{{ version }}.tar.gz
   sha256: eb7f46952d4786008ed4f272172bec475fcdcb988f5e1c5405daea9d41955cef
-  patches:
-    # Using Cython 3.0.10 and NumPy 2.0 installed rather than Cython 3.0.8
-    - cython.patch
-    # fix for 9.4.2, simpler version of https://github.com/enthought/mayavi/pull/1342
-    - badwindow.patch
 
 build:
   number: {{ build }}
