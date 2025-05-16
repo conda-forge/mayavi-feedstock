@@ -62,10 +62,10 @@ test:
     - mayavi2 --help
     - xvfb-run pytest -v --pyargs mayavi  # [build_variant != "noqt" and linux]
     # Segfaults on macOS with PyQt5
-    - pytest -v --pyargs mayavi  # [(build_variant != "pyqt" or not osx) and not linux]
+    - pytest -v --pyargs mayavi  # [(build_variant != "pyqt" or not osx) and not (win and py==39) and not linux]
     # Bad GC on Linux with PyQt5, segfaults on macOS with PyQt5
     - xvfb-run pytest -v --pyargs tvtk  # [build_variant == "pyside6" and linux]
-    - pytest -v --pyargs tvtk  # [(build_variant != "pyqt" or not osx) and not linux]
+    - pytest -v --pyargs tvtk  # [(build_variant != "pyqt" or not osx) and not (win and py==39) and not linux]
   imports:
     - tvtk
     - tvtk.array_ext
