@@ -68,6 +68,7 @@ jobs:
       osx_arm64_build_variantpyside6numpy2python3.13.____cp313:
         CONFIG: osx_arm64_build_variantpyside6numpy2python3.13.____cp313
         UPLOAD_PACKAGES: 'True'
+    maxParallel: 11
   timeoutInMinutes: 360
   variables: {}
 
