@@ -1,15 +1,27 @@
 bot:
   automerge: true
-build_platform:
-  osx_arm64: osx_64
 conda_build:
   pkg_format: '2'
+conda_build_tool: rattler-build
 conda_forge_output_validation: true
 github:
   branch_name: main
   tooling_branch_name: main
+# The tests need a display, and yum_requirements gets Xvfb from the build
+# image.  RHEL 10 dropped the standalone X.org server, so on the AlmaLinux 10
+# image "yum install xorg-x11-server-Xvfb" fails outright with "Unable to find
+# a match" -- there is no conda-forge package for it to fall back to either.
+# Pin to alma9, which still ships one.  Drop this if the tests ever stop
+# needing a display, or if a conda-forge Xvfb appears
+# (conda-forge/staged-recipes#26241).
+os_version:
+  linux_64: alma9
 azure:
   max_parallel: 25
 provider:
   win: azure
+  # build osx-arm64 natively rather than cross-compiling it from osx-64: there
+  # is no compiled code left to cross-compile, and the build has to *run* VTK to
+  # generate tvtk_classes.zip, which a cross build cannot do
+  osx_arm64: default
 test: native_and_emulated

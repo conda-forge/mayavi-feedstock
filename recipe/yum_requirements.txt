@@ -1,4 +1,5 @@
 libXt-devel
 mesa-libGLU-devel
+# for xvfb-run in the tests; the build itself no longer needs a display, which
+# is also why psmisc (killall, to stop the build's own Xvfb) is gone
 xorg-x11-server-Xvfb
-psmisc

@@ -1,8 +1,9 @@
+# The only axes left are the OS and the Qt binding.  Since 4.9.0 mayavi ships no
+# compiled code, so it is built once per OS (see build.python.version_independent
+# in recipe.yaml) rather than once per Python, and the vtk/vtk_base pins are gone
+# with it: the recipe now builds against whatever VTK in its supported window the
+# solver picks, and says so in its run requirements.
 build_variant:
   - "pyqt"
   - "pyside6"
   - "noqt"  # [linux64]
-vtk:
-- 9.4.2
-vtk_base:
-- 9.4.2

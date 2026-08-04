@@ -1,0 +1,196 @@
+schema_version: 1
+
+context:
+  name: mayavi
+  version: "4.9.0"
+  # bump for a rebuild; the per-variant offsets in build.number go on top.  Not
+  # called build_number: that name is taken inside build.string, where it means
+  # the already-computed build.number
+  build_base: 0
+  # Upstream's supported VTK window (MIN_VTK / MAX_VTK in mayavi's setup.py).
+  # tvtk_classes.zip bakes in the API of whatever VTK it was generated against,
+  # so this is both what we build against and what we allow at run time.
+  vtk_min: "9.4"
+  vtk_max: "9.8"
+
+package:
+  name: ${{ name }}
+  version: ${{ version }}
+
+source:
+  url: https://pypi.org/packages/source/${{ name[0] }}/${{ name }}/${{ name }}-${{ version }}.tar.gz
+  sha256: d12cfb362a658b0d99f088184abb6dca805d8accc437bd5e8131c221987783de
+
+build:
+  # Since 4.9.0 mayavi has no compiled code: the only thing that varies by
+  # platform is tvtk_classes.zip, generated at build time from the installed
+  # VTK, whose classes differ per windowing system (X11 / Cocoa / Win32).  So
+  # one build per OS covers every Python -- CEP 20 keeps the package in the
+  # platform subdir while dropping the python version from its dependencies.
+  python:
+    version_independent: true
+    # Declared here rather than left to pip, which honours pyproject's
+    # [project.gui-scripts] and so builds mayavi2.exe from pythonw.exe on
+    # Windows -- no console, so "mayavi2 --help" cannot write to stdout and
+    # exits 1.  conda-build generated console wrappers for these before 4.9.0
+    # and Windows users have had a working CLI on that basis.
+    entry_points:
+      - mayavi2 = mayavi.scripts.mayavi2:main
+      - tvtk_doc = tvtk.tools.tvtk_doc:main
+  # ... which means building it once, against python_min, rather than per-Python
+  skip: not is_python_min
+  # The offsets keep the solver's default preference pyqt > pyside6 > noqt, as
+  # it has been since these variants were introduced, and the build_variant
+  # prefix keeps `conda install "mayavi=*=pyside6_*"` selecting a variant.
+  number: ${{ build_base + (300 if build_variant == "pyqt" else 200 if build_variant == "pyside6" else 100) }}
+  string: ${{ build_variant }}_h${{ hash }}_${{ build_number }}
+  script:
+    file: build
+
+requirements:
+  # vtk-base run-exports an exact "vtk-base >=9.6.2,<9.6.3.0a0" pin, which would
+  # land in our run requirements alongside the window below and silently undo
+  # it.  That pin is there for things linking VTK's C++ ABI; mayavi has no
+  # compiled code and only uses VTK's Python API, whose supported range is
+  # exactly what MIN_VTK/MAX_VTK describe.
+  ignore_run_exports:
+    by_name:
+      - vtk-base
+  host:
+    - python
+    - pip
+    # mayavi's build-system.requires, installed here rather than fetched from
+    # PyPI: build.sh passes --no-build-isolation so that tvtk_classes.zip is
+    # generated against conda-forge's vtk-base and not against a pip wheel
+    - setuptools >=77
+    - setuptools_scm >=8
+    # numpy is deliberately not listed: it arrives with vtk-base anyway, and
+    # naming it here makes conda-smithy add a numpy axis to the build matrix,
+    # doubling every job over an ABI this package no longer has
+    - vtk-base >=${{ vtk_min }},<${{ vtk_max }}
+    # imported by the class generator (tvtk_base is traits-based)
+    - traits
+    - traitsui
+    - apptools
+  run:
+    # explicit floor: a version-independent package gets a bare "python" in its
+    # dependencies, which would let it install on a Python older than mayavi's
+    # requires-python
+    - python >=${{ python_min }}
+    - vtk-base >=${{ vtk_min }},<${{ vtk_max }}
+    - numpy
+    - traits >=6.0.0
+    - traitsui >=7.0.0
+    - pyface >=6.1.1
+    - apptools
+    - envisage
+    - configobj
+    - packaging
+    - puremagic
+    - pygments
+    - setuptools
+    # only used on python <3.11, but a version-independent package cannot say
+    # so; it is pure Python and tiny, so it is simply always required
+    - importlib_resources
+    - if: build_variant == "pyqt"
+      then: pyqt
+    - if: build_variant == "pyside6"
+      then: pyside6
+
+tests:
+  - python:
+      imports:
+        - tvtk
+        - mayavi
+      python_version:
+        - ${{ python_min }}.*
+        - "*"
+  - requirements:
+      run:
+        - pytest
+        # --timeout is a hang catcher, not a performance assertion: upstream CI
+        # uses 10s/60s, but these agents render in software on two cores, so
+        # anything that tight would just go red on a slow machine
+        - pytest-timeout
+        - pillow
+    script:
+      # mayavi.__version__ comes from the installed metadata, so this catches a
+      # package whose contents do not match the version this recipe claims --
+      # a stale sha256, or a source tarball whose PKG-INFO says something else
+      - python -c "import mayavi; assert mayavi.__version__ == '${{ version }}', mayavi.__version__; print(mayavi.__version__)"
+      - mayavi2 --help
+      # Linux has no display, hence the Xvfb wrapper; -a picks a free server
+      # number, where bare xvfb-run insists on :99 and dies if it is taken.
+      # noqt has no toolkit to drive the tests with at all.
+      - if: linux and build_variant != "noqt"
+        then: xvfb-run -a pytest -v --timeout=300 --pyargs mayavi
+      # Bad GC on Linux with PyQt5
+      - if: linux and build_variant == "pyside6"
+        then: xvfb-run -a pytest -sv --timeout=300 --pyargs tvtk
+      # Segfaults on macOS with PyQt5
+      - if: osx and build_variant != "pyqt"
+        then:
+          - pytest -v --timeout=300 --pyargs mayavi
+          - pytest -sv --timeout=300 --pyargs tvtk
+      - if: win
+        then:
+          - pytest -v --timeout=300 --pyargs mayavi
+          - pytest -sv --timeout=300 --pyargs tvtk
+
+  # tvtk_classes.zip is generated against the newest VTK the host solve picks,
+  # but the run requirements claim the whole >=9.4,<9.8 window, and older
+  # runtimes are only "degrade gracefully" by design -- so actually run the
+  # suites against them, the way wheel.yml does for the wheels.  Linux and
+  # pyside6 only: every supported vtk-base has a build there, xvfb-run gives
+  # the tests a display, and one job is enough to catch API drift that is not
+  # platform-specific.
+  - if: linux and build_variant == "pyside6"
+    then:
+      - requirements:
+          run:
+            - vtk-base 9.4.*
+            # vtkmodules/numpy_interface/algorithms.py does
+            # "in1d = _make_ufunc(numpy.in1d)" at import time in 9.4 and 9.5,
+            # and numpy removed in1d in 2.4, so those two cannot be imported at
+            # all next to a current numpy.  Upstream's CI pins its 9.4/9.5 rows
+            # the same way; 9.6 dropped the reference and needs no pin.
+            - numpy <2.4
+            - pytest
+            - pytest-timeout
+            - pillow
+        script:
+          - python -c "import vtk; print('runtime VTK', vtk.vtkVersion().GetVTKVersion())"
+          - xvfb-run -a pytest -v --timeout=300 --pyargs mayavi
+          - xvfb-run -a pytest -sv --timeout=300 --pyargs tvtk
+      - requirements:
+          run:
+            - vtk-base 9.5.*
+            - numpy <2.4  # see above
+            - pytest
+            - pytest-timeout
+            - pillow
+        script:
+          - python -c "import vtk; print('runtime VTK', vtk.vtkVersion().GetVTKVersion())"
+          - xvfb-run -a pytest -v --timeout=300 --pyargs mayavi
+          - xvfb-run -a pytest -sv --timeout=300 --pyargs tvtk
+
+about:
+  homepage: https://github.com/enthought/mayavi
+  license: BSD-3-Clause
+  # all three, matching pyproject.toml's license-files; taken from the source
+  # tree rather than a copy kept in the recipe, which can only go stale
+  license_file:
+    - LICENSE.txt
+    - LICENSE_COLORBREWER.txt
+    - LICENSE_YORICK.txt
+  summary: The Mayavi scientific data 3-dimensional visualizers
+  documentation: https://docs.enthought.com/mayavi/mayavi
+  repository: https://github.com/enthought/mayavi
+
+extra:
+  recipe-maintainers:
+    - msarahan
+    - grlee77
+    - dfroger
+    - cadair
+    - larsoner
