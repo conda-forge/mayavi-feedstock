@@ -42,7 +42,7 @@ build:
   # The offsets keep the solver's default preference pyqt > pyside6 > noqt, as
   # it has been since these variants were introduced, and the build_variant
   # prefix keeps `conda install "mayavi=*=pyside6_*"` selecting a variant.
-  number: ${{ build_base + (300 if build_variant == "pyqt" else 200 if build_variant == "pyside6" else 100) }}
+  number: 1
   string: ${{ build_variant }}_h${{ hash }}_${{ build_number }}
   script:
     file: build
