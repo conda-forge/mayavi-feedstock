@@ -6,7 +6,7 @@ context:
   # bump for a rebuild; the per-variant offsets in build.number go on top.  Not
   # called build_number: that name is taken inside build.string, where it means
   # the already-computed build.number
-  build_base: 0
+  build_base: 1
   # Upstream's supported VTK window (MIN_VTK / MAX_VTK in mayavi's setup.py).
   # tvtk_classes.zip bakes in the API of whatever VTK it was generated against,
   # so this is both what we build against and what we allow at run time.
@@ -42,7 +42,7 @@ build:
   # The offsets keep the solver's default preference pyqt > pyside6 > noqt, as
   # it has been since these variants were introduced, and the build_variant
   # prefix keeps `conda install "mayavi=*=pyside6_*"` selecting a variant.
-  number: 1
+  number: ${{ build_base + (300 if build_variant == "pyqt" else 200 if build_variant == "pyside6" else 100) }}
   string: ${{ build_variant }}_h${{ hash }}_${{ build_number }}
   script:
     file: build
