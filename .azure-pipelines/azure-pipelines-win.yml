@@ -5,11 +5,11 @@
 jobs:
 - job: win
   pool:
-    vmImage: windows-2022
+    vmImage: $(vm_image)
   strategy:
     matrix:
-      win_64_build_variantpyqtis_python_mintruepython3.10.____cpython:
-        CONFIG: win_64_build_variantpyqtis_python_mintruepython3.10.____cpython
+      win_64_build_variantpyqtis_python_mintruepython3.11.____cpython:
+        CONFIG: win_64_build_variantpyqtis_python_mintruepython3.11.____cpython
         UPLOAD_PACKAGES: 'True'
         build_platform: win-64
         build_workspace_dir: D:\\bld\\
@@ -18,8 +18,9 @@ jobs:
         resize_partitions: false
         store_build_artifacts: false
         tools_install_dir: D:\Miniforge
-      win_64_build_variantpyside6is_python_mintruepython3.10.____cpython:
-        CONFIG: win_64_build_variantpyside6is_python_mintruepython3.10.____cpython
+        vm_image: windows-2022
+      win_64_build_variantpyside6is_python_mintruepython3.11.____cpython:
+        CONFIG: win_64_build_variantpyside6is_python_mintruepython3.11.____cpython
         UPLOAD_PACKAGES: 'True'
         build_platform: win-64
         build_workspace_dir: D:\\bld\\
@@ -28,6 +29,7 @@ jobs:
         resize_partitions: false
         store_build_artifacts: false
         tools_install_dir: D:\Miniforge
+        vm_image: windows-2022
   timeoutInMinutes: 360
   variables:
     UPLOAD_TEMP: D:\\tmp

@@ -1,3 +1,5 @@
+DOCKER_PLATFORM:
+- linux/amd64
 build_variant:
 - pyside6
 channel_sources:
@@ -13,9 +15,9 @@ pin_run_as_build:
     min_pin: x.x
     max_pin: x.x
 python:
-- 3.10.* *_cpython
+- 3.11.* *_cpython
 python_min:
-- '3.10'
+- '3.11'
 target_platform:
 - linux-64
 zip_keys:
